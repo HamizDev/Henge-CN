@@ -155,7 +155,7 @@ final class Machines: ObservableObject {
             let data = try Data(contentsOf: folder.appendingPathComponent("machine.json"))
             let info = try JSONDecoder().decode(MachineFile.self, from: data)
             let missing = Self.required.filter { !FileManager.default.fileExists(atPath: folder.appendingPathComponent($0).path) }
-            guard missing.isEmpty, Self.hasDisk(folder) else { throw message("The folder is missing \((missing + (Self.hasDisk(folder) ? [] : ["disk.img"])).joined(separator: ", ")).") }
+            guard missing.isEmpty, Self.hasDisk(folder) else { throw message(String(format: NSLocalizedString("The folder is missing %@.", comment: "Import missing file"), (missing + (Self.hasDisk(folder) ? [] : ["disk.img"])).joined(separator: ", "))) }
             var mac = VirtualMac(name: info.name ?? folder.lastPathComponent, ecid: info.ecid, seed: info.seed ?? 0,
                                  ramMB: info.ramMB ?? 2048, diskBytes: 0)
             importing = mac.name
@@ -230,7 +230,7 @@ final class Machines: ObservableObject {
         let free = (try? Self.root.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]))?.volumeAvailableCapacityForImportantUsage ?? 0
         let needed = Int64(used) + (256 << 20)
         if free > 0 && free < needed {
-            throw message("Exporting \(mac.name) needs about \(ByteText.string(UInt64(needed))) free; this \(Device.name) has \(ByteText.string(UInt64(free))). Deleting a downloaded macOS installer (Install macOS, swipe it) frees about 16 GB.")
+            throw message(String(format: NSLocalizedString("Exporting %@ needs about %@ free; this %@ has %@. Deleting a downloaded macOS installer (Install macOS, swipe it) frees about 16 GB.", comment: "Export storage"), mac.name, ByteText.string(UInt64(needed)), Device.name, ByteText.string(UInt64(free))))
         }
         try fm.createDirectory(at: partial, withIntermediateDirectories: true)
         do {
@@ -306,6 +306,6 @@ final class Machines: ObservableObject {
     }
 
     private func message(_ text: String) -> NSError {
-        NSError(domain: "Henge", code: 1, userInfo: [NSLocalizedDescriptionKey: text])
+        NSError(domain: "Henge", code: 1, userInfo: [NSLocalizedDescriptionKey: NSLocalizedString(text, comment: "Import or export failure")])
     }
 }

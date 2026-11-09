@@ -299,3 +299,14 @@
 "This install isn't signed with the increased memory limit entitlement. Reinstall Henge with a certificate that has it. Export your Mac first if the reinstall replaces the app's data." = "当前安装的签名不包含增加内存限制的权限。如需使用，请使用具备该权限的证书重新签名。若重新安装可能清除应用数据，请先导出虚拟 Mac。";
 "%@ used" = "已使用 %@";
 "of %@" = "总计 %@";
+"The folder is missing %@." = "导入文件夹缺少 %@。";
+"The packed disk could not be unpacked (not enough space?)." = "无法解包虚拟机磁盘，可能是存储空间不足。";
+"Exporting %@ needs about %@ free; this %@ has %@. Deleting a downloaded macOS installer (Install macOS, swipe it) frees about 16 GB." = "导出“%@”需要约 %@ 可用空间，但这台 %@ 只有 %@。可以在“安装 macOS”界面删除已下载的系统镜像，释放约 16 GB 空间。";
+"The disk could not be written (not enough space?)." = "无法写入磁盘，可能是存储空间不足。";
+"Henge couldn't get the Mac's boot ROM from Apple (%@). Check the connection and try again." = "Henge 无法从 Apple 获取虚拟 Mac 的启动固件（%@）。请检查网络后重试。";
+"The Mac's boot ROM from Apple wasn't what Henge expected, so it wasn't used. Check the connection and try again, or look for an update to Henge." = "从 Apple 获取的启动固件校验不符合预期，Henge 已拒绝使用该文件。请检查网络后重试，或等待 Henge 更新。";
+"Built-in JIT is available only on a physical device." = "内置 JIT 仅支持真实 iPhone 或 iPad 设备。";
+"Built-in JIT needs iOS 26 or later. Use StikDebug instead." = "内置 JIT 需要 iOS 26 或更高版本。你可以改用 StikDebug。";
+"Built-in JIT is unavailable inside LiveContainer. Use StikDebug instead." = "在 LiveContainer 中无法使用内置 JIT，请改用 StikDebug。";
+"Built-in JIT is unavailable." = "当前设备无法使用内置 JIT。";
+"TrollStore did not enable JIT. In TrollStore's Settings turn on URL Scheme, and make sure Henge was installed through TrollStore (or is signed with get-task-allow)." = "TrollStore 未能启用 JIT。请在其设置中打开 URL Scheme，并确认 Henge 通过 TrollStore 安装（或签名保留 get-task-allow）。";
