@@ -21,6 +21,9 @@ on:
 
 # Keep the newest build for each branch when several localization updates land.
 # Manual builds remain available through workflow_dispatch.
+permissions:
+  contents: write
+
 concurrency:
   group: henge-build-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -118,3 +121,33 @@ jobs:
           name: Henge-ipa-${{ github.sha }}
           path: /Users/runner/Desktop/Henge.ipa
           if-no-files-found: error
+
+      - name: 发布未签名 IPA 到 Releases（开发预览）
+        if: ${{ github.ref == 'refs/heads/main' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          IPA="/Users/runner/Desktop/Henge.ipa"
+          test -s "$IPA"
+          RELEASE_TAG="cn-dev-${GITHUB_RUN_NUMBER}"
+          CHECKSUM=$(shasum -a 256 "$IPA" | awk '{print $1}')
+          cat > /tmp/release-notes.md <<EOF
+          ## Henge-CN 自动构建（未签名开发预览版）
+
+          从 main 分支成功构建，但尚未经实机验证，不能视为稳定版。
+
+          - 对应 Git 提交：${GITHUB_SHA}
+          - SHA-256：${CHECKSUM}
+          - 侧载前需要重新签名，并保留 get-task-allow 权限以启用 JIT。
+          - 请备份 iPhone 与已有虚拟机数据；iOS 27.2 Beta 2 兼容性待实测。
+          - 原项目：https://github.com/Leviidev/Henge
+          - 许可证：GPL-2.0-or-later；本 Release 附有对应源码。
+          EOF
+          gh release create "$RELEASE_TAG" "$IPA" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "Henge-CN 开发预览 #${GITHUB_RUN_NUMBER}（未签名）" \
+            --notes-file /tmp/release-notes.md \
+            --prerelease
