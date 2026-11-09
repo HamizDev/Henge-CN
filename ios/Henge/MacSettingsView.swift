@@ -28,13 +28,13 @@ struct MacSettingsView: View {
                     HStack(alignment: .firstTextBaseline) {
                         Text("\(mac.ramMB / 1024) GB").font(.system(size: 26, weight: .bold))
                         Spacer()
-                        Text(Entitlements.increasedMemory ? "Outside the app's limit once JIT is on" : "Used from free storage if needed")
+                        Text(LocalizedStringKey(Entitlements.increasedMemory ? "Outside the app's limit once JIT is on" : "Used from free storage if needed"))
                             .font(.system(size: 13)).foregroundStyle(Desk.dim).multilineTextAlignment(.trailing)
                     }
                     Stepper("Memory", value: Binding(get: { mac.ramMB / 1024 }, set: { mac.ramMB = $0 * 1024; save() }), in: Device.memoryChoices)
                         .font(.system(size: 16))
                     if let note = Device.memoryNote(mac.ramMB / 1024) {
-                        Text(note).font(.system(size: 13)).foregroundStyle(Desk.dim)
+                        Text(LocalizedStringKey(note)).font(.system(size: 13)).foregroundStyle(Desk.dim)
                     }
                 }
                 .padding(17)
@@ -79,7 +79,11 @@ struct MacSettingsView: View {
                             Text("16:9").tag("wide")
                         }
                         .pickerStyle(.segmented)
-                        Text("\(mac.screen.width) × \(mac.screen.height). \(Device.isPad ? "Performance renders about 30% fewer pixels. " : "")Changes apply the next time this Mac starts.")
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("\(mac.screen.width) × \(mac.screen.height)")
+                            if Device.isPad { Text("Performance renders about 30% fewer pixels.") }
+                            Text("Changes apply the next time this Mac starts.")
+                        }
                             .font(.system(size: 13)).foregroundStyle(Desk.dim)
                     }
                     .padding(17)

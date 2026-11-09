@@ -111,7 +111,7 @@ final class Installer: NSObject, ObservableObject {
                 try await install(mac, ipsw: ipsw, cpus: cpus)
                 if !keepImage { try? FileManager.default.removeItem(at: ipsw) }
                 HengeLog.log("install", "\(name): installed \(release.name)")
-                phase = .done("\(release.name) is installed on \(name). Quit Henge (swipe it away) and open it again, then tap Start.")
+                phase = .done(String(format: NSLocalizedString("%@ is installed on %@. Quit Henge (swipe it away) and open it again, then tap Start.", comment: "Installer completion"), release.name, name))
             } catch {
                 HengeLog.log("install", "failed: \(error.localizedDescription)")
                 // A half-installed Mac is no use, and its disk can be many gigabytes. The download stays.
@@ -126,7 +126,7 @@ final class Installer: NSObject, ObservableObject {
             .volumeAvailableCapacityForImportantUsage ?? 0
         let needed = Self.spaceNeeded(r)
         if free > 0 && free < needed {
-            throw message("This install needs about \(ByteText.string(UInt64(needed))) free; this \(Device.name) has \(ByteText.string(UInt64(free))).")
+            throw message(String(format: NSLocalizedString("This install needs about %@ free; this %@ has %@.", comment: "Insufficient storage"), ByteText.string(UInt64(needed)), Device.name, ByteText.string(UInt64(free))))
         }
     }
 
@@ -249,7 +249,7 @@ final class Installer: NSObject, ObservableObject {
     }
 
     private func message(_ text: String) -> NSError {
-        NSError(domain: "Henge", code: 2, userInfo: [NSLocalizedDescriptionKey: text])
+        NSError(domain: "Henge", code: 2, userInfo: [NSLocalizedDescriptionKey: NSLocalizedString(text, comment: "Installer failure")])
     }
 }
 
@@ -273,7 +273,7 @@ extension Installer: URLSessionDownloadDelegate {
         let status = (downloadTask.response as? HTTPURLResponse)?.statusCode ?? 0
         do {
             guard let target, status == 200 || status == 206 else {
-                throw NSError(domain: "Henge", code: 3, userInfo: [NSLocalizedDescriptionKey: "Apple's server answered \(status)."])
+                throw NSError(domain: "Henge", code: 3, userInfo: [NSLocalizedDescriptionKey: String(format: NSLocalizedString("Apple's server answered %d.", comment: "Download HTTP status"), status)])
             }
             try? FileManager.default.removeItem(at: target)
             try FileManager.default.moveItem(at: location, to: target)

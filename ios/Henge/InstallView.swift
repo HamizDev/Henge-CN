@@ -100,7 +100,7 @@ struct InstallView: View {
             .padding(.horizontal, 17)
             .padding(.vertical, 10)
             if let note = Device.memoryNote(ramGB) {
-                Text(note)
+                Text(LocalizedStringKey(note))
                     .font(.system(size: 13))
                     .foregroundStyle(Desk.dim)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -144,7 +144,7 @@ struct InstallView: View {
                 } else {
                     Text("\(ByteText.string(UInt64(r.bytes))) download").font(.system(size: 13)).foregroundStyle(Desk.dim)
                 }
-                Text(r.note).font(.system(size: 13)).foregroundStyle(Desk.dim)
+                Text(LocalizedStringKey(r.note)).font(.system(size: 13)).foregroundStyle(Desk.dim)
             }
             Spacer()
             if release == r { Image(systemName: "checkmark").font(.system(size: 15, weight: .bold)).foregroundStyle(Desk.accentLight) }
@@ -184,7 +184,7 @@ struct InstallView: View {
         let elapsed = Date().timeIntervalSince(stageStarted)
         guard stageSeen == stage, fraction > 0.03, fraction < 1, elapsed > 10 else { return nil }
         let minutes = Int((elapsed / fraction * (1 - fraction) / 60).rounded(.up))
-        return minutes <= 1 ? "About a minute left in this step" : "About \(minutes) minutes left in this step"
+        return minutes <= 1 ? NSLocalizedString("About a minute left in this step", comment: "Install ETA") : String(format: NSLocalizedString("About %d minutes left in this step", comment: "Install ETA"), minutes)
     }
 
     @ViewBuilder private var progress: some View {
@@ -200,7 +200,7 @@ struct InstallView: View {
                 Text("\(Int(fraction * 100))%")
                     .font(.system(size: 66, weight: .bold))
                     .monospacedDigit()
-                Text(timeLeft ?? "Step \(stage + 1) of \(Self.stages.count)")
+                Text(timeLeft ?? String(format: NSLocalizedString("Step %d of %d", comment: "Install progress"), stage + 1, Self.stages.count))
                     .font(.system(size: 15))
                     .foregroundStyle(Desk.dim)
                     .padding(.top, 2)
@@ -242,7 +242,7 @@ struct InstallView: View {
         }
         .deskCard()
 
-        Button(details ? "Hide details" : "Show details") { withAnimation { details.toggle() } }
+        Button { withAnimation { details.toggle() } } label: { Text(LocalizedStringKey(details ? "Hide details" : "Show details")) }
             .font(.system(size: 15, weight: .semibold))
             .foregroundStyle(Desk.accentLight)
             .padding(.top, 14)
@@ -265,7 +265,7 @@ struct InstallView: View {
         VStack(spacing: 14) {
             Image(systemName: "checkmark.circle.fill").font(.system(size: 54)).foregroundStyle(Desk.good).padding(.top, 8)
             Text("Installed").font(.system(size: 24, weight: .bold))
-            Text(text).font(.system(size: 15)).foregroundStyle(Desk.dim).multilineTextAlignment(.center)
+            Text(LocalizedStringKey(text)).font(.system(size: 15)).foregroundStyle(Desk.dim).multilineTextAlignment(.center)
         }
         .padding(20)
         .frame(maxWidth: .infinity)
@@ -276,7 +276,7 @@ struct InstallView: View {
     @ViewBuilder private func failed(_ text: String) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("It did not work").font(.system(size: 22, weight: .bold))
-            Text(text).font(.system(size: 15))
+            Text(LocalizedStringKey(text)).font(.system(size: 15))
             Text("Quit Henge (swipe it away) and open it again before trying again: only one Mac can start per launch.")
                 .font(.system(size: 13)).foregroundStyle(Desk.dim)
             Button("Back") { installer.reset() }.buttonStyle(DeskButtonStyle()).padding(.top, 6)
