@@ -1,31 +1,33 @@
-# Henge-CN · 简体中文及增强版
+# Henge-CN · 中文开发说明
 
-> 非官方社区版本，基于 [Leviidev/Henge](https://github.com/Leviidev/Henge)。本项目与原作者没有官方关联，遵循 GPL-2.0-or-later，保留原有提交历史、版权声明与贡献者署名。
+> 基于 [Leviidev/Henge](https://github.com/Leviidev/Henge) 的非官方社区版本，保留原始许可证及上游作者归属。
 
-## 状态
+## 当前进度
 
-本 Fork 已集成首批中文资源和可选 macOS 27 均衡性能预设，补充了安装步骤与 JIT 引导的动态文本本地化。**当前仍是部分汉化。GitHub Actions 已成功编译首版源码（提交 `04c5636`），并生成 IPA 构建产物；更新后的 189 条翻译版仍在 CI 检查中，且尚未经 iPhone 17 Pro Max（iOS 27.2 Beta 2）真机安装与使用验证，不应视为稳定中文版。**
+- 已加入简体中文本地化、部分动态 UI/状态翻译及 macOS 27 保守性能预设。
+- GitHub Actions 编译成功后自动向 [Releases](https://github.com/HamizDev/Henge-CN/releases) 发布未签名预览版 IPA。
+- **仍未完成 iPhone 17 Pro Max + iOS 27.2 Beta 2 的真机 JIT、安装、macOS 27 启动与稳定性测试**，不应当作稳定版。
+- 某些底层原始错误和开发者诊断日志保留英文，以避免影响故障分析。
 
-### 功能
-- 简体中文（zh-Hans）本地化，保留英文回退，逐步覆盖安装、JIT、设置、虚拟 Mac 管理。
-- 设置 → 性能中的 macOS 27 均衡性能预设：30 Hz、关闭实验性超级块和空闲忙等、采用原上游的安全缓存大小。
-- 继承上游模拟器引擎与 JIT 代码，不修改用户磁盘或固件。
+## 下载
 
-### 待验证
-- [ ] Xcode 27、Husk 依赖和恢复栈完整编译，产出 IPA
-- [ ] iPhone 17 Pro Max / iOS 27.2 Beta 2：JIT 自检、macOS 27 安装、启动、关机
-- [ ] 完整动态字符串和错误信息汉化
-- [ ] 独立定位 CPU/JIT、TLB、GPU 和 I/O 性能热点
-- [ ] 安全地追踪和合并 Henge 上游更新
+[Releases](https://github.com/HamizDev/Henge-CN/releases) · [Actions](https://github.com/HamizDev/Henge-CN/actions) · [英文文档](README.en.md)
 
-## 构建
+Release 的 `Henge.ipa` 需要重新签名，务必保留 `get-task-allow`。备份设备及虚拟 Mac 后再试用。
 
-查看原版 [README.md](README.md) 的 Building 部分：Xcode 27+、xcodegen、Husk 依赖、restore stack、C 引擎、IPA 打包和签名。请勿只运行 xcodegen 就以为得到可安装的 IPA。
+## 性能预设
 
-签名保留 get-task-allow，并在真实设备验证 JIT，未验证前不要公开标注为稳定版。
+适合先尝试 4 vCPU、6 GB 客体内存、30 Hz 显示，并根据具体设备签名权限调整 JIT 缓存，切勿强制大内存。
+已有 Lighter macOS 选项可减少桌面动态效果。实际性能优化仍需要测量译码、TLB、GPU 和内存占用。
 
-## 许可证
+## 后续
 
-原作者：Leviidev 及社区贡献者。Henge 源码按 GPL-2.0-or-later 发布，本项目修改部分同许可。分发修改后的 IPA 必须履行对应源码提供和版权/许可保留义务。
+- [ ] 完整中文界面与用户可读错误提示，保留日志原始错误
+- [ ] 验证 Release IPA 重新签名与 JIT
+- [ ] 完成 iOS 27.2 Beta 2 及 macOS 27 真机兼容性测试
+- [ ] 持续跟进上游性能优化和安全修复
 
-为了避免自动消耗 GitHub Actions 配额，Fork 已移除自动构建工作流。
+## 许可
+
+本 Fork 遵循 GPL-2.0-or-later，保留对应源码、贡献者署名及许可信息。
+后续提交信息使用中文。
