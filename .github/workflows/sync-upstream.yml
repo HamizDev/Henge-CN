@@ -1,0 +1,79 @@
+# Henge-CN：定时检查 Henge 上游，安全生成待审核的同步 PR。
+# 不自动合并，也不覆盖汉化、性能预设或已发布版本。
+name: 检查 Henge 上游更新
+
+on:
+  schedule:
+    - cron: '25 1,13 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: henge-cn-upstream-check
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: 检出 Henge-CN 的完整 Git 历史
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 检查上游并准备草稿同步请求
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config user.name "Henge-CN 同步机器人"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git remote add upstream https://github.com/Leviidev/Henge.git
+          git fetch --no-tags upstream main
+          git fetch --no-tags origin main
+
+          UPSTREAM_SHA="$(git rev-parse upstream/main)"
+          FORK_SHA="$(git rev-parse origin/main)"
+          echo "Henge-CN main: $FORK_SHA"
+          echo "上游 Henge main: $UPSTREAM_SHA"
+
+          if git merge-base --is-ancestor "$UPSTREAM_SHA" "$FORK_SHA"; then
+            echo "上游改动已全部包含在 main 中，无需同步。"
+            exit 0
+          fi
+
+          # 有未处理的同步 PR 时不重复开新 PR。
+          EXISTING="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --json title,number --jq '.[] | select(.title | startswith("同步上游")) | .number' | head -n 1 || true)"
+          if [ -n "$EXISTING" ]; then
+            echo "当前已有同步 PR #$EXISTING，先审核并合并该 PR。"
+            exit 0
+          fi
+
+          BRANCH="sync/upstream-auto-${UPSTREAM_SHA:0:12}"
+          git checkout -B "$BRANCH" origin/main
+
+          if ! git merge --no-ff --no-edit -m "同步上游 Henge 更新（待验证）" upstream/main; then
+            echo "::warning::本次同步发生合并冲突，未修改 main。"
+            git merge --abort || true
+            EXISTING_ISSUE="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --json title,number --jq '.[] | select(.title | startswith("上游同步冲突")) | .number' | head -n 1 || true)"
+            if [ -z "$EXISTING_ISSUE" ]; then
+              gh issue create --repo "$GITHUB_REPOSITORY" --title "上游同步冲突：需要人工处理" --body "上游提交：`$UPSTREAM_SHA`。自动合并发生冲突，请对比中文汉化、性能预设、构建工作流，手动解决后编译验证。此检查不会修改 main。" || true
+            fi
+            exit 0
+          fi
+
+          git push origin "HEAD:refs/heads/$BRANCH"
+          BODY="$(printf '## 同步摘要\n\n- 上游：`%s`\n- 当前 Fork：`%s`\n- 自动生成草稿，**不会自行合并 main**。\n- 保留汉化、性能修改、中文 README 和 Release 流程；合并前请审查改动，并确认 Actions 编译及 JIT/虚拟机兼容性。\n' "$UPSTREAM_SHA" "$FORK_SHA")"
+          if gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$BRANCH" --draft --title "同步上游 Henge 更新：${UPSTREAM_SHA:0:12}" --body "$BODY"; then
+            echo "已创建草稿 PR，等待审查。"
+          else
+            echo "::warning::已推送同步分支，但无法自动创建 PR。请在仓库 Settings > Actions > General 允许 Actions 创建 PR，或从 GitHub 的 Compare 页面手动创建。"
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "待创建上游同步 PR：${UPSTREAM_SHA:0:12}" --body "自动同步分支：`$BRANCH`；由于 GitHub Actions PR 权限限制，需手动创建指向 main 的 PR。" || true
+          fi
