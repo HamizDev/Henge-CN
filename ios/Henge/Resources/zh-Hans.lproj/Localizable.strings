@@ -310,3 +310,14 @@
 "Built-in JIT is unavailable inside LiveContainer. Use StikDebug instead." = "在 LiveContainer 中无法使用内置 JIT，请改用 StikDebug。";
 "Built-in JIT is unavailable." = "当前设备无法使用内置 JIT。";
 "TrollStore did not enable JIT. In TrollStore's Settings turn on URL Scheme, and make sure Henge was installed through TrollStore (or is signed with get-task-allow)." = "TrollStore 未能启用 JIT。请在其设置中打开 URL Scheme，并确认 Henge 通过 TrollStore 安装（或签名保留 get-task-allow）。";
+"Get LocalDevVPN" = "获取 LocalDevVPN";
+"Keep Henge open and the %@ plugged in. Needs about %@ free." = "请保持 Henge 在前台运行，并为这台 %@ 连接电源。安装需要约 %@ 可用空间。";
+"Turn on JIT first. %@" = "请先启用 JIT。%@";
+"Waiting for your %@…" = "正在等待这台 %@…";
+"Enter this code on your %@" = "请在这台 %@ 上输入以下验证码";
+"Pair on this %@" = "在这台 %@ 上配对";
+"Paired with %@" = "已与 %@ 配对";
+"Delete the %@ download" = "删除 %@ 的下载文件";
+"Saved in Files, under Henge, Exports, %@. Deleting Henge deletes it too, so move it somewhere else first." = "文件已保存到“文件 › Henge › Exports › %@”。删除 Henge 也会删除它，请先移动到其他文件夹。";
+"Exporting %@… keep Henge open" = "正在导出 %@…请保持 Henge 在前台运行";
+"Delete %@?" = "确定删除 %@？";

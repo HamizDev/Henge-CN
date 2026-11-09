@@ -211,8 +211,7 @@ struct JITSetupFlow: View {
                 }
                 .font(.system(size: 14, weight: .semibold))
                 if pairing.backgroundLimited {
-                    Text("This installation can only wait about 30 seconds in the background, "
-                       + "so go to Settings straight away.")
+                    Text(NSLocalizedString("This installation can only wait about 30 seconds in the background, so go to Settings straight away.", comment: "Pairing background time"))
                         .font(.system(size: 13)).foregroundStyle(.orange)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -281,7 +280,7 @@ struct JITSetupFlow: View {
             }
             .padding(16).hengeCard()
         } actions: {
-            Button(LocalDevVPN.actionTitle) { LocalDevVPN.open() }
+            Button { LocalDevVPN.open() } label: { Text(LocalizedStringKey(LocalDevVPN.actionTitle)) }
                 .buttonStyle(PrimaryButtonStyle())
             Button("It's connected") { path.append(.enable) }
                 .font(.system(size: 15, weight: .medium))
@@ -322,7 +321,7 @@ struct JITSetupFlow: View {
                         .font(.system(size: 14, weight: .semibold))
                     }
                     if jit.advice?.actions.contains(.connectLocalDevVPN) == true {
-                        Button(LocalDevVPN.actionTitle) { LocalDevVPN.open() }
+                        Button { LocalDevVPN.open() } label: { Text(LocalizedStringKey(LocalDevVPN.actionTitle)) }
                             .font(.system(size: 14, weight: .semibold))
                     }
                 }

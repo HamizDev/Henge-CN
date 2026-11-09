@@ -121,8 +121,7 @@ struct InstallView: View {
         .buttonStyle(DeskButtonStyle(enabled: jitReady && !Device.chipTooOld))
         .disabled(!jitReady || Device.chipTooOld)
         .padding(.top, 20)
-        Text(Device.chipTooOld ? Device.chipTooOldText : jitReady ? "Keep Henge open and the \(Device.name) plugged in. Needs about \(ByteText.string(UInt64(Installer.spaceNeeded(release)))) free."
-                                : JITBootstrap.lastFailure ?? "Turn on JIT first. \(jit.automaticDescription)")
+        Text(installAdvice)
             .font(.system(size: 13))
             .foregroundStyle(Desk.dim)
             .multilineTextAlignment(.center)
@@ -133,6 +132,15 @@ struct InstallView: View {
                 .buttonStyle(DeskButtonStyle())
                 .padding(.top, 12)
         }
+    }
+
+    /// 将安装页面的动态建议与容量信息按当前系统语言展示。
+    private var installAdvice: String {
+        if Device.chipTooOld { return Device.chipTooOldText }
+        if jitReady {
+            return String(format: NSLocalizedString("Keep Henge open and the %@ plugged in. Needs about %@ free.", comment: "Install advice"), Device.name, ByteText.string(UInt64(Installer.spaceNeeded(release))))
+        }
+        return JITBootstrap.lastFailure ?? String(format: NSLocalizedString("Turn on JIT first. %@", comment: "JIT needed"), jit.automaticDescription)
     }
 
     private func versionRow(_ r: MacOSRelease) -> some View {
