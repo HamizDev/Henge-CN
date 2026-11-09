@@ -161,7 +161,7 @@ struct MouseButton: View {
     @State private var down = false
 
     var body: some View {
-        Text(title)
+        Text(LocalizedStringKey(title))
             .font(.system(size: 15, weight: .semibold))
             .foregroundStyle(down ? Desk.text : Desk.dim)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -181,6 +181,6 @@ struct MouseButton: View {
                         StickyKeys.shared.releaseAll()
                     }
             )
-            .accessibilityLabel(title)
+            .accessibilityLabel(Text(LocalizedStringKey(title)))
     }
 }

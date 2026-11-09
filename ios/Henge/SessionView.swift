@@ -319,7 +319,7 @@ struct SessionView: View {
     }
 
     private func hint(_ strong: String, _ rest: String) -> some View {
-        (Text(strong).foregroundColor(Desk.dim).fontWeight(.semibold) + Text(" \(rest)").foregroundColor(Desk.faint))
+        (Text(LocalizedStringKey(strong)).foregroundColor(Desk.dim).fontWeight(.semibold) + Text(" ") + Text(LocalizedStringKey(rest)).foregroundColor(Desk.faint))
             .font(.system(size: 15))
     }
 
@@ -351,7 +351,7 @@ struct SessionView: View {
                 .frame(width: 44, height: 44)
                 .contentShape(Rectangle())
         }
-        .accessibilityLabel(label)
+        .accessibilityLabel(Text(LocalizedStringKey(label)))
     }
 
     // MARK: Filling the phone
@@ -437,7 +437,7 @@ struct SessionView: View {
     private func errorCard(_ text: String, _ layout: Layout) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("This Mac could not start").font(.system(size: 17, weight: .semibold))
-            Text(text).font(.system(size: 14)).foregroundStyle(Desk.dim)
+            Text(LocalizedStringKey(text)).font(.system(size: 14)).foregroundStyle(Desk.dim)
             Button("Close") { close() }.font(.system(size: 15, weight: .semibold)).foregroundStyle(Desk.accentLight)
         }
         .padding(18)
@@ -448,9 +448,9 @@ struct SessionView: View {
 
     private var phase: String {
         switch state {
-        case 0: return error == nil ? "Starting…" : "Not started"
-        case 1: return userCode ? "macOS is running" : "Booting"
-        default: return "Stopped (\(String(cString: henge_vm_exit_reason())))"
+        case 0: return NSLocalizedString(error == nil ? "Starting…" : "Not started", comment: "Mac state")
+        case 1: return NSLocalizedString(userCode ? "macOS is running" : "Booting", comment: "Mac state")
+        default: return String(format: NSLocalizedString("Stopped (%@)", comment: "Mac state"), String(cString: henge_vm_exit_reason()))
         }
     }
 
@@ -458,10 +458,10 @@ struct SessionView: View {
         NavigationStack {
             List {
                 Section(phase) {
-                    LabeledContent("CPUs on", value: "\(cpusOn) of \(cpus)")
+                    LabeledContent("CPUs on", value: String(format: NSLocalizedString("%d of %d", comment: "Active cores"), cpusOn, cpus))
                     LabeledContent("Temperature", value: Self.thermalLabel(thermalState))
                     LabeledContent("Translated blocks", value: String(format: "%.1f M/s", blocksPerSecond / 1e6))
-                    LabeledContent("Network frames", value: "\(framesOut) out, \(framesIn) in")
+                    LabeledContent("Network frames", value: String(format: NSLocalizedString("%d out, %d in", comment: "Network stats"), framesOut, framesIn))
                     LabeledContent("Up", value: "\(Int(Date().timeIntervalSince(started))) s")
                 }
                 Section("Display") {
@@ -485,7 +485,7 @@ struct SessionView: View {
                         .font(.footnote).foregroundStyle(.secondary)
                 }
                 Section("Sharing") {
-                    LabeledContent("Clipboard and folder", value: helperRunning ? "On" : "Not set up")
+                    LabeledContent("Clipboard and folder", value: NSLocalizedString(helperRunning ? "On" : "Not set up", comment: "Sharing status"))
                     if !helperRunning {
                         Button("Type the Set Up Command") {
                             showDetails = false
@@ -496,8 +496,8 @@ struct SessionView: View {
                         }
                     }
                     Text(helperRunning
-                         ? "Put files in Files, Henge, Shared to see them in the Henge folder in this Mac's home folder. What you copy on the Mac is copied here too, and the paste button pastes from here into the Mac."
-                         : "Once for each Mac: open Terminal on the Mac, tap this, then press Return. When macOS asks about henge-agent and local networks, choose Allow. It types \(Sharing.setUpCommand) and needs the Mac's keyboard layout to be U.S.")
+                         ? NSLocalizedString("Put files in Files, Henge, Shared to see them in the Henge folder in this Mac's home folder. What you copy on the Mac is copied here too, and the paste button pastes from here into the Mac.", comment: "Sharing")
+                         : String(format: NSLocalizedString("Once for each Mac: open Terminal on the Mac, tap this, then press Return. When macOS asks about henge-agent and local networks, choose Allow. It types %@ and needs the Mac's keyboard layout to be U.S.", comment: "Sharing"), Sharing.setUpCommand))
                         .font(.footnote).foregroundStyle(.secondary)
                 }
                 Section("Lighter macOS") {
@@ -548,7 +548,7 @@ struct SessionView: View {
         let ram = GuestMemory.prepare(mac)
         HengeLog.log("session", "available memory \(henge_available_memory() >> 20) MB")
         guard ram >= 1024 else {
-            error = "There is not room for this Mac's memory: it needs a few GB of free storage."
+            error = NSLocalizedString("There is not room for this Mac's memory: it needs a few GB of free storage.", comment: "VM startup failure")
             return
         }
         var buffer = [CChar](repeating: 0, count: 256)

@@ -71,12 +71,12 @@ struct HomeView: View {
         }
         if installer.busy {
             Button { tab = .install } label: {
-                NoticeRow(symbol: "arrow.down.circle.fill", text: "Installing \(installer.machineName)…", trailing: "See")
+                NoticeRow(symbol: "arrow.down.circle.fill", text: String(format: NSLocalizedString("Installing %@…", comment: "Install status"), installer.machineName), trailing: "See")
             }
         }
         if let name = machines.importing {
             NoticeRow(symbol: "square.and.arrow.down.fill",
-                      text: machines.unpacked > 0 ? String(format: "Unpacking %@'s disk… %.0f%%", name, machines.unpacked * 100) : "Bringing in \(name)…")
+                      text: machines.unpacked > 0 ? String(format: NSLocalizedString("Unpacking %@'s disk… %.0f%%", comment: "Import status"), name, machines.unpacked * 100) : String(format: NSLocalizedString("Bringing in %@…", comment: "Import status"), name))
         }
         if let error = machines.lastError {
             NoticeRow(symbol: "exclamationmark.triangle.fill", text: error, tint: Desk.bad)
@@ -193,7 +193,7 @@ private struct MacHero: View {
                 .padding(.top, 15)
             } else {
                 if let jitNote {
-                    Text(jitNote).font(.system(size: 13)).foregroundStyle(Desk.dim)
+                    Text(LocalizedStringKey(jitNote)).font(.system(size: 13)).foregroundStyle(Desk.dim)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 5)
                         .padding(.top, 10)
@@ -248,7 +248,7 @@ struct NoticeRow: View {
     var body: some View {
         HStack(spacing: 11) {
             Image(systemName: symbol).foregroundStyle(tint)
-            Text(text).font(.system(size: 15)).foregroundStyle(Desk.text).multilineTextAlignment(.leading)
+            Text(LocalizedStringKey(text)).font(.system(size: 15)).foregroundStyle(Desk.text).multilineTextAlignment(.leading)
             Spacer(minLength: 4)
             if let trailing { Text(LocalizedStringKey(trailing)).font(.system(size: 15, weight: .semibold)).foregroundStyle(Desk.accentLight) }
         }
