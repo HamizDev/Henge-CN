@@ -225,7 +225,7 @@ struct InstallView: View {
         VStack(spacing: 0) {
             ForEach(Array(Self.stages.enumerated()), id: \.offset) { i, title in
                 HStack {
-                    Text(title)
+                    Text(LocalizedStringKey(title))
                         .font(.system(size: 16, weight: i == stage ? .semibold : .regular))
                         .foregroundStyle(i > stage ? Desk.faint : Desk.text)
                     Spacer()

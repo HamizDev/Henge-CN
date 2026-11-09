@@ -18,7 +18,7 @@ struct SettingsView: View {
                 Section("JIT") {
                     LabeledContent("Status", value: NSLocalizedString(JITBootstrap.ready ? "On" : "Off", comment: "JIT status"))
                     Picker("Method", selection: $jit.method) {
-                        ForEach(JITMethod.allCases) { Text($0.title).tag($0) }
+                        ForEach(JITMethod.allCases) { Text(LocalizedStringKey($0.title)).tag($0) }
                     }
                     Text(jit.method == .automatic ? jit.automaticDescription : "Henge uses \(jit.method.title).")
                         .font(.footnote).foregroundStyle(.secondary)
