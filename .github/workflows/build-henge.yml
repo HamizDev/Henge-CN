@@ -19,6 +19,12 @@ on:
     branches:
       - '**'
 
+# Keep the newest build for each branch when several localization updates land.
+# Manual builds remain available through workflow_dispatch.
+concurrency:
+  group: henge-build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   HUSK: ${{ github.workspace }}/Husk
   # The Makefile takes its slirp headers from IOS_DEPS, not HUSK:
