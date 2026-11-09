@@ -94,8 +94,29 @@ jobs:
               sleep 15
             fi
           done
-          echo "::error::Husk 第三方依赖连续下载失败"
-          exit 1
+          # 上游发布资源偶发 HTTP 504，使用对应 Git tag 作为备选源码来源。
+          # libffi 的 Git 仓库不含生成的 configure，需要 autoreconf。
+          echo "::warning::发布资源下载失败，尝试从官方 Git 仓库获取等版本源码"
+          brew install autoconf automake libtool
+          if [ ! -x third_party/build/libffi-3.5.0/configure ]; then
+            rm -rf third_party/build/libffi-3.5.0
+            git clone --depth 1 --branch v3.5.0 https://github.com/libffi/libffi.git third_party/build/libffi-3.5.0
+            (
+              cd third_party/build/libffi-3.5.0
+              export LIBTOOLIZE="$(command -v glibtoolize || command -v libtoolize)"
+              ./autogen.sh
+            )
+          fi
+          if [ ! -f third_party/build/libslirp-v4.9.1/meson.build ]; then
+            rm -rf third_party/build/libslirp-v4.9.1
+            git clone --depth 1 --branch v4.9.1-release-mirror https://github.com/utmapp/libslirp.git third_party/build/libslirp-v4.9.1
+          fi
+          # 此工作流仅需要 libffi、GLib 与 libslirp 依赖；
+          # QEMU 和 libucontext 的下载失败不应阻断 Henge 引擎构建。
+          test -x third_party/build/libffi-3.5.0/configure
+          test -f third_party/build/libslirp-v4.9.1/meson.build
+          test -f third_party/build/glib-2.83.0/meson.build
+          echo "备选源码已就绪"
 
       # Henge only needs these three sysroot pieces: libffi (a glib dep),
       # glib (whose meson subprojects also produce libpcre2-8 and libintl),
