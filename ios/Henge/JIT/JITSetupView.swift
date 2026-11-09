@@ -19,6 +19,22 @@ struct JITSetupFlow: View {
 
     private var device: String { OnDevicePairing.deviceKind }
 
+    /// 将固定的引导文案按当前系统语言显示；设备名、配对名和链接作为参数保留。
+    /// 网络错误及系统诊断信息找不到译文时直接回退英文，不修改原始状态值。
+    private func translated(_ english: String) -> String {
+        let template = english
+            .replacingOccurrences(of: device, with: "%1$@")
+            .replacingOccurrences(of: OnDevicePairing.hostName, with: "%2$@")
+            .replacingOccurrences(of: LocalDevVPN.appStore.absoluteString, with: "%3$@")
+        let value = NSLocalizedString(template, comment: "Henge JIT 引导与提示")
+        if value == template { return english }
+        if value.contains("%1$@") || value.contains("%2$@") || value.contains("%3$@") {
+            return String(format: value, device, OnDevicePairing.hostName, LocalDevVPN.appStore.absoluteString)
+        }
+        return value
+    }
+
+
     var body: some View {
         NavigationStack(path: $path) {
             choose
@@ -118,8 +134,8 @@ struct JITSetupFlow: View {
                     .frame(width: 34, height: 34)
                     .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(LocalizedStringKey(title)).font(.system(size: 16, weight: .semibold)).foregroundStyle(Theme.text)
-                    Text(LocalizedStringKey(detail)).font(.system(size: 13)).foregroundStyle(Theme.textDim)
+                    Text(LocalizedStringKey(translated(title))).font(.system(size: 16, weight: .semibold)).foregroundStyle(Theme.text)
+                    Text(LocalizedStringKey(translated(detail))).font(.system(size: 13)).foregroundStyle(Theme.textDim)
                         .fixedSize(horizontal: false, vertical: true)
                         .multilineTextAlignment(.leading)
                 }
@@ -290,7 +306,7 @@ struct JITSetupFlow: View {
             if jit.busy {
                 HStack(spacing: 11) {
                     ProgressView().tint(Theme.accent)
-                    Text(LocalizedStringKey(jit.status ?? "Working…")).font(.system(size: 14)).foregroundStyle(Theme.text)
+                    Text(LocalizedStringKey(translated(jit.status ?? "Working…"))).font(.system(size: 14)).foregroundStyle(Theme.text)
                     Spacer(minLength: 0)
                 }
                 .padding(16).hengeCard(high: true)
@@ -434,8 +450,8 @@ struct JITSetupFlow: View {
                         .foregroundStyle(Theme.accent)
                         .frame(width: 56, height: 56)
                         .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-                    Text(LocalizedStringKey(title)).font(.system(size: 28, weight: .semibold)).foregroundStyle(Theme.text)
-                    Text(LocalizedStringKey(subtitle)).font(.system(size: 15)).foregroundStyle(Theme.textDim)
+                    Text(LocalizedStringKey(translated(title))).font(.system(size: 28, weight: .semibold)).foregroundStyle(Theme.text)
+                    Text(LocalizedStringKey(translated(subtitle))).font(.system(size: 15)).foregroundStyle(Theme.textDim)
                         .fixedSize(horizontal: false, vertical: true)
                     content()
                 }
@@ -466,7 +482,7 @@ struct JITSetupFlow: View {
                 }
             }
             .frame(width: 26, height: 26)
-            Text(.init(text))
+            Text(.init(translated(text)))
                 .font(.system(size: 15))
                 .foregroundStyle(Theme.text)
                 .fixedSize(horizontal: false, vertical: true)
@@ -475,7 +491,7 @@ struct JITSetupFlow: View {
     }
 
     private func outcome(_ text: String, ok: Bool) -> some View {
-        Label(LocalizedStringKey(text), systemImage: ok ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+        Label(LocalizedStringKey(translated(text)), systemImage: ok ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
             .font(.system(size: 14, weight: .medium))
             .foregroundStyle(ok ? .green : .red)
             .fixedSize(horizontal: false, vertical: true)
