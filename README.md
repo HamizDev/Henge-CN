@@ -1,3 +1,5 @@
+> **Henge-CN（非官方社区版）**：简体中文界面与 macOS 27 性能优化实验，基于 [Leviidev/Henge](https://github.com/Leviidev/Henge)。详见 [中文说明](README.zh-CN.md)。尚无真机验证的汉化 IPA；保留全部上游许可与署名。
+
 <p align="center">
   <img src="docs/icon.png" width="120" height="120" alt="Henge">
 </p>

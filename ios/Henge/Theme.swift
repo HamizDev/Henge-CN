@@ -65,7 +65,7 @@ struct DeskHeading: View {
     let title: String
     init(_ title: String) { self.title = title }
     var body: some View {
-        Text(title)
+        Text(LocalizedStringKey(title))
             .font(.system(size: 14, weight: .semibold))
             .foregroundStyle(Desk.dim)
             .padding(.horizontal, 18)

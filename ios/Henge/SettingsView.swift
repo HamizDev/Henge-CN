@@ -16,7 +16,7 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 Section("JIT") {
-                    LabeledContent("Status", value: JITBootstrap.ready ? "On" : "Off")
+                    LabeledContent("Status", value: NSLocalizedString(JITBootstrap.ready ? "On" : "Off", comment: "JIT status"))
                     Picker("Method", selection: $jit.method) {
                         ForEach(JITMethod.allCases) { Text($0.title).tag($0) }
                     }
@@ -32,7 +32,7 @@ struct SettingsView: View {
                 }
                 .listRowBackground(Desk.card)
                 Section("Memory") {
-                    LabeledContent("Extra memory", value: Entitlements.increasedMemory ? "On" : "Off")
+                    LabeledContent("Extra memory", value: NSLocalizedString(Entitlements.increasedMemory ? "On" : "Off", comment: "Entitlement status"))
                     LabeledContent("Henge's limit", value: ByteText.string(UInt64(Entitlements.memoryLimitAtLaunch)))
                     LabeledContent("Free for Henge", value: ByteText.string(UInt64(henge_available_memory())))
                     Text(Entitlements.increasedMemory
@@ -58,6 +58,16 @@ struct SettingsView: View {
                     .listRowBackground(Desk.card)
                 }
                 Section("Performance") {
+                    // Henge-CN 2026-11-09: opt-in conservative macOS 27 preset.
+                    Button("Apply macOS 27 balanced preset") {
+                        refreshRate = 30
+                        fastFlush = true
+                        wfiSpin = false
+                        superblocks = false
+                        codeCacheMB = JITBootstrap.defaultCodeCacheMB
+                    }
+                    Text("Uses 30 Hz, faster ordered disk writes, and non-experimental CPU settings. The code-cache size follows your signing entitlement. Quit and reopen Henge before the next Mac session. This reduces graphics overhead; it does not eliminate macOS 27 emulation costs.")
+                        .font(.footnote).foregroundStyle(.secondary)
                     Picker("Mac refresh rate", selection: $refreshRate) {
                         Text("30 Hz").tag(30)
                         Text("60 Hz").tag(60)

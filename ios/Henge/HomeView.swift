@@ -135,9 +135,9 @@ extension VirtualMac {
     }
 
     var lastUsedText: String {
-        guard let lastUsed else { return "Never" }
-        if Calendar.current.isDateInToday(lastUsed) { return "Today" }
-        if Calendar.current.isDateInYesterday(lastUsed) { return "Yesterday" }
+        guard let lastUsed else { return NSLocalizedString("Never", comment: "No launch") }
+        if Calendar.current.isDateInToday(lastUsed) { return NSLocalizedString("Today", comment: "Today") }
+        if Calendar.current.isDateInYesterday(lastUsed) { return NSLocalizedString("Yesterday", comment: "Yesterday") }
         return lastUsed.formatted(.dateTime.month(.abbreviated).day())
     }
 
@@ -166,7 +166,7 @@ private struct MacHero: View {
                     HStack {
                         Text(mac.name).font(.system(size: 24, weight: .bold)).foregroundStyle(Desk.text).lineLimit(1)
                         Spacer()
-                        Text(jitReady ? "JIT on" : "JIT off")
+                        Text(LocalizedStringKey(jitReady ? "JIT on" : "JIT off"))
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundStyle(jitReady ? Desk.good : Desk.warn)
                             .padding(.horizontal, 11)
@@ -230,7 +230,7 @@ private struct FactTile: View {
     let value: String
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
-            Text(title).font(.system(size: 13)).foregroundStyle(Desk.dim)
+            Text(LocalizedStringKey(title)).font(.system(size: 13)).foregroundStyle(Desk.dim)
             Text(value).font(.system(size: 21, weight: .bold)).foregroundStyle(Desk.text).lineLimit(1).minimumScaleFactor(0.7)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -250,7 +250,7 @@ struct NoticeRow: View {
             Image(systemName: symbol).foregroundStyle(tint)
             Text(text).font(.system(size: 15)).foregroundStyle(Desk.text).multilineTextAlignment(.leading)
             Spacer(minLength: 4)
-            if let trailing { Text(trailing).font(.system(size: 15, weight: .semibold)).foregroundStyle(Desk.accentLight) }
+            if let trailing { Text(LocalizedStringKey(trailing)).font(.system(size: 15, weight: .semibold)).foregroundStyle(Desk.accentLight) }
         }
         .padding(14)
         .deskCard()
