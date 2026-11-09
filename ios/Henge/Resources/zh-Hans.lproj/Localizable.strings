@@ -239,7 +239,7 @@
 "This device closed the connection, which usually means it no longer accepts Henge's pairing. Pair again, and check that LocalDevVPN is connected." = "设备主动断开了连接，可能已不再接受当前配对。请重新配对，并确认 LocalDevVPN 已连接。";
 "Henge couldn't reach this device. Connect LocalDevVPN, then try again." = "无法连接此设备。请连接 LocalDevVPN 后重试。";
 "LocalDevVPN can show Connected while iOS still sends Henge's connection over cellular. Turn Cellular Data off in Control Center, wait 2 seconds, then turn it back on. Or join any Wi-Fi once; a hotspot works. Keep LocalDevVPN connected, turn off other VPNs such as Tailscale, then try again." = "即使 LocalDevVPN 显示已连接，iOS 有时仍会通过蜂窝网络发送调试流量。请在控制中心暂时关闭蜂窝数据后重新开启，或连接一次 Wi-Fi／热点。保持 LocalDevVPN 连接，并关闭 Tailscale 等其他 VPN 后重试。";
-"%@ is installed on %@. Quit Henge (swipe it away) and open it again, then tap Start." = "已在“%@”上安装 %@。请彻底退出 Henge 并重新打开，然后点击“启动”。";
+"%@ is installed on %@. Quit Henge (swipe it away) and open it again, then tap Start." = "已在“%2$@”上安装 %1$@。请彻底退出 Henge 并重新打开，然后点击“启动”。";
 "This install needs about %@ free; this %@ has %@." = "安装需要约 %@ 可用空间，但这台 %@ 只有 %@。";
 "The download kept failing." = "下载多次失败，请检查网络连接后重试。";
 "Cannot create the disk." = "无法创建虚拟机磁盘。";
@@ -259,7 +259,7 @@
 "Hide details" = "隐藏详细信息";
 "Show details" = "显示详细信息";
 "macOS has little room under 4 GB, so it can be very slow." = "分配给 macOS 的内存不足 4 GB，运行速度可能很慢。";
-"More than %d GB is a lot for this %@: iOS may close Henge when macOS gets busy." = "为这台 %@ 分配超过 %d GB 内存可能导致内存压力过高，iOS 可能会关闭 Henge。";
+"More than %d GB is a lot for this %@: iOS may close Henge when macOS gets busy." = "为这台 %2$@ 分配超过 %1$d GB 内存可能导致内存压力过高，iOS 可能会关闭 Henge。";
 "macOS won't run on this %@. Henge needs an A14 or M1 chip or newer." = "这台 %@ 无法运行 macOS。Henge 需要 A14、M1 或更新芯片。";
 "Performance renders about 30% fewer pixels." = "性能模式的渲染像素量减少约 30%。";
 "Changes apply the next time this Mac starts." = "修改将在下次启动这台 Mac 时生效。";
