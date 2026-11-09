@@ -20,7 +20,7 @@ struct SettingsView: View {
                     Picker("Method", selection: $jit.method) {
                         ForEach(JITMethod.allCases) { Text(LocalizedStringKey($0.title)).tag($0) }
                     }
-                    Text(jit.method == .automatic ? jit.automaticDescription : "Henge uses \(jit.method.title).")
+                    Text(jit.method == .automatic ? jit.automaticDescription : String(format: NSLocalizedString("Henge uses %@.", comment: "Selected JIT method"), NSLocalizedString(jit.method.title, comment: "JIT method")))
                         .font(.footnote).foregroundStyle(.secondary)
                     Button("Set up JIT") { jit.showSetup = true }
                     Toggle("Turn on JIT when Henge opens", isOn: $jitAtLaunch)

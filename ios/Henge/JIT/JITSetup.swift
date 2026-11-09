@@ -17,9 +17,9 @@ enum JITMethod: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .automatic: return "Automatic"
-        case .stikDebug: return "StikDebug"
-        case .trollStore: return "TrollStore"
-        case .jailbreak: return "Jailbreak (Dopamine)"
+        case .stikDebug: return NSLocalizedString("StikDebug", comment: "Automatic JIT method")
+        case .trollStore: return NSLocalizedString("TrollStore", comment: "Automatic JIT method")
+        case .jailbreak: return NSLocalizedString("Jailbreak (Dopamine)", comment: "Automatic JIT method")
         case .builtIn: return "Built-in StikJIT"
         }
     }
@@ -134,8 +134,8 @@ final class JITCoordinator: ObservableObject {
         case .trollStore: return "TrollStore is installed, so Henge will ask it to enable JIT."
         case .jailbreak: return "This device is jailbroken, so JIT comes from the jailbreak's Allow JIT in Apps setting."
         default: return hasPairing
-            ? "Henge will use its paired built-in helper."
-            : "StikDebug, TrollStore and a jailbreak were not found, so Henge will use its built-in helper."
+            ? NSLocalizedString("Henge will use its paired built-in helper.", comment: "Automatic JIT method")
+            : NSLocalizedString("StikDebug, TrollStore and a jailbreak were not found, so Henge will use its built-in helper.", comment: "Automatic JIT method")
         }
     }
 

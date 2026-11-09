@@ -183,3 +183,10 @@
 "Waiting for the helper to attach…" = "正在等待辅助程序连接…";
 "Resetting the Developer Disk Image cache…" = "正在重置开发者磁盘映像缓存…";
 "Pair this device or import its pairing file first." = "请先配对此设备，或导入其配对文件。";
+"Working…" = "正在处理…";
+"Henge uses %@." = "Henge 使用 %@。";
+"StikDebug, TrollStore and a jailbreak were not found, so Henge will use its built-in helper." = "未检测到 StikDebug、TrollStore 或越狱环境，Henge 将尝试使用内置辅助程序。";
+"JIT is on. a Mac can start." = "JIT 已启用，可以启动 Mac。";
+"Pair again" = "重新配对";
+"Import a new pairing file" = "导入新的配对文件";
+"Pairing code %@" = "配对码 %@";
