@@ -71,12 +71,12 @@ struct HomeView: View {
         }
         if installer.busy {
             Button { tab = .install } label: {
-                NoticeRow(symbol: "arrow.down.circle.fill", text: String(format: NSLocalizedString("Installing %@…", comment: "Install status"), installer.machineName), trailing: "See")
+                NoticeRow(symbol: "arrow.down.circle.fill", text: "Installing \(installer.machineName)…", trailing: "See")
             }
         }
         if let name = machines.importing {
             NoticeRow(symbol: "square.and.arrow.down.fill",
-                      text: machines.unpacked > 0 ? String(format: NSLocalizedString("Unpacking %@'s disk… %.0f%%", comment: "Import status"), name, machines.unpacked * 100) : String(format: NSLocalizedString("Bringing in %@…", comment: "Import status"), name))
+                      text: machines.unpacked > 0 ? String(format: "Unpacking %@'s disk… %.0f%%", name, machines.unpacked * 100) : "Bringing in \(name)…")
         }
         if let error = machines.lastError {
             NoticeRow(symbol: "exclamationmark.triangle.fill", text: error, tint: Desk.bad)
@@ -135,7 +135,7 @@ extension VirtualMac {
     }
 
     var lastUsedText: String {
-        guard let lastUsed else { return NSLocalizedString("Never", comment: "No launch") }
+        guard let lastUsed else { return NSLocalizedString("Never", comment: "Never used") }
         if Calendar.current.isDateInToday(lastUsed) { return NSLocalizedString("Today", comment: "Today") }
         if Calendar.current.isDateInYesterday(lastUsed) { return NSLocalizedString("Yesterday", comment: "Yesterday") }
         return lastUsed.formatted(.dateTime.month(.abbreviated).day())
@@ -220,7 +220,7 @@ private struct MacHero: View {
         }
         .aspectRatio(mac.aspect, contentMode: .fit)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Color.white.opacity(0.14), lineWidth: 0.5))
+        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Desk.hairline, lineWidth: 0.5))
         .accessibilityHidden(true)
     }
 }

@@ -6,7 +6,7 @@ struct InstallView: View {
     @ObservedObject private var jit = JITCoordinator.shared
     @State private var jitReady = JITBootstrap.ready
     @StateObject private var display = DisplayRouter()
-    @State private var release = MacOSRelease.all.first(where: Installer.haveImage) ?? MacOSRelease.all[0]
+    @State private var release = MacOSRelease.all.first(where: Installer.haveImage) ?? MacOSRelease.recommended
     @State private var name = "Mac"
     @State private var ramGB = Device.suggestedRAMGB
     @State private var deleteAfter = false
@@ -23,6 +23,9 @@ struct InstallView: View {
                 VStack(spacing: 0) {
                     switch installer.phase {
                     case .idle: chooser
+                    case .checking:
+                        ProgressView("Preparing to install macOS…")
+                            .padding(20)
                     case .downloading, .preparing, .installing: progress
                     case .done(let text): finished(text)
                     case .failed(let text): failed(text)
@@ -52,7 +55,7 @@ struct InstallView: View {
                 HStack(spacing: 0) {
                     Button { release = r } label: { versionRow(r) }
                         .buttonStyle(.plain)
-                    if Installer.haveImage(r) && !installer.busy { // restore images are 15-25 GB: deleting one should be easy to find
+                    if (Installer.haveImage(r) || Installer.partSize(r) != nil) && !installer.busy { // restore images are 15-25 GB: deleting one should be easy to find
                         Button { confirmDeleteDownload = r } label: {
                             Image(systemName: "trash")
                                 .font(.system(size: 15, weight: .medium))
@@ -61,12 +64,12 @@ struct InstallView: View {
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
-                        .accessibilityLabel("Delete the \(r.name) download")
+                        .accessibilityLabel(Text(String(format: NSLocalizedString("Delete the %@ download", comment: "下载删除按钮"), r.name)))
                         .padding(.trailing, 6)
                     }
                 }
                     .contextMenu {
-                        if Installer.haveImage(r) {
+                        if Installer.haveImage(r) || Installer.partSize(r) != nil {
                             Button("Delete Download", role: .destructive) { confirmDeleteDownload = r }
                         }
                     }
@@ -134,13 +137,13 @@ struct InstallView: View {
         }
     }
 
-    /// 将安装页面的动态建议与容量信息按当前系统语言展示。
+    /// 为动态设备容量和 JIT 安装提示提供本地化。
     private var installAdvice: String {
         if Device.chipTooOld { return Device.chipTooOldText }
         if jitReady {
-            return String(format: NSLocalizedString("Keep Henge open and the %@ plugged in. Needs about %@ free.", comment: "Install advice"), Device.name, ByteText.string(UInt64(Installer.spaceNeeded(release))))
+            return String(format: NSLocalizedString("Keep Henge open and the %@ plugged in. Needs about %@ free.", comment: "安装空间提示"), Device.name, ByteText.string(UInt64(Installer.spaceNeeded(release))))
         }
-        return JITBootstrap.lastFailure ?? String(format: NSLocalizedString("Turn on JIT first. %@", comment: "JIT needed"), jit.automaticDescription)
+        return JITBootstrap.lastFailure ?? String(format: NSLocalizedString("Turn on JIT first. %@", comment: "需要 JIT"), jit.automaticDescription)
     }
 
     private func versionRow(_ r: MacOSRelease) -> some View {
@@ -148,9 +151,12 @@ struct InstallView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(r.name).font(.system(size: 16, weight: .medium)).foregroundStyle(Desk.text)
                 if let size = Installer.imageSize(r) {
-                    Text("Downloaded, \(ByteText.string(UInt64(size)))").font(.system(size: 13)).foregroundStyle(Desk.good)
+                    Text(String(format: NSLocalizedString("Downloaded, %@", comment: "已下载镜像大小"), ByteText.string(UInt64(size)))).font(.system(size: 13)).foregroundStyle(Desk.good)
+                } else if let part = Installer.partSize(r) {
+                    Text(String(format: NSLocalizedString("%@ of %@ downloaded: goes on from there", comment: "断点续传进度"), ByteText.string(UInt64(part)), ByteText.string(UInt64(r.bytes))))
+                        .font(.system(size: 13)).foregroundStyle(Desk.dim)
                 } else {
-                    Text("\(ByteText.string(UInt64(r.bytes))) download").font(.system(size: 13)).foregroundStyle(Desk.dim)
+                    Text(String(format: NSLocalizedString("%@ download", comment: "待下载镜像大小"), ByteText.string(UInt64(r.bytes)))).font(.system(size: 13)).foregroundStyle(Desk.dim)
                 }
                 Text(LocalizedStringKey(r.note)).font(.system(size: 13)).foregroundStyle(Desk.dim)
             }
@@ -196,7 +202,7 @@ struct InstallView: View {
     }
 
     @ViewBuilder private var progress: some View {
-        Text("\(release.name) on this \(Device.name). Keep Henge open.")
+        Text(String(format: NSLocalizedString("%@ on this %@. Keep Henge open.", comment: "系统安装进度"), release.name, Device.name))
             .font(.system(size: 16))
             .foregroundStyle(Desk.dim)
             .frame(maxWidth: .infinity, alignment: .leading)

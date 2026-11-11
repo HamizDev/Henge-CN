@@ -2,9 +2,10 @@
 
 > 基于 [Leviidev/Henge](https://github.com/Leviidev/Henge) 的非官方社区版本，保留原始许可证及上游作者归属。
 
-## 当前进度
+## 当前进度（同步官方 Henge 0.3）
 
 - 已加入简体中文本地化、部分动态 UI/状态翻译及 macOS 27 保守性能预设。
+- 同步 Henge 0.3：Sonoma、Ventura、系统/明暗主题、触控手势、后台下载、正常关机重启及 JIT/内存优化；部分新 UI 文案仍需汉化检查。
 - GitHub Actions 编译成功后自动向 [Releases](https://github.com/HamizDev/Henge-CN/releases) 发布未签名预览版 IPA。
 - **仍未完成 iPhone 17 Pro Max + iOS 27.2 Beta 2 的真机 JIT、安装、macOS 27 启动与稳定性测试**，不应当作稳定版。
 - 某些底层原始错误和开发者诊断日志保留英文，以避免影响故障分析。
