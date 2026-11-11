@@ -9,19 +9,19 @@ struct StoppedMacView: View {
 
     private var title: String {
         switch outcome {
-        case Int32(HENGE_VM_OUTCOME_SHUTDOWN.rawValue): return "Mac shut down"
-        case Int32(HENGE_VM_OUTCOME_RESTART.rawValue): return "Mac requested a restart"
-        case Int32(HENGE_VM_OUTCOME_HOST_STOP.rawValue): return "Mac stopped"
-        default: return "Mac stopped unexpectedly"
+        case Int32(HENGE_VM_OUTCOME_SHUTDOWN.rawValue): return NSLocalizedString("Mac shut down", comment: "虚拟机结束状态")
+        case Int32(HENGE_VM_OUTCOME_RESTART.rawValue): return NSLocalizedString("Mac requested a restart", comment: "虚拟机结束状态")
+        case Int32(HENGE_VM_OUTCOME_HOST_STOP.rawValue): return NSLocalizedString("Mac stopped", comment: "虚拟机结束状态")
+        default: return NSLocalizedString("Mac stopped unexpectedly", comment: "虚拟机结束状态")
         }
     }
 
     private var detail: String {
-        let next = "You can start this Mac again or return to your Macs."
+        let next = NSLocalizedString("You can start this Mac again or return to your Macs.", comment: "虚拟机结束后操作")
         switch outcome {
         case Int32(HENGE_VM_OUTCOME_SHUTDOWN.rawValue), Int32(HENGE_VM_OUTCOME_HOST_STOP.rawValue): return next
-        case Int32(HENGE_VM_OUTCOME_RESTART.rawValue): return "The Mac is ready to start again."
-        default: return "The Mac stopped: \(reason). " + next
+        case Int32(HENGE_VM_OUTCOME_RESTART.rawValue): return NSLocalizedString("The Mac is ready to start again.", comment: "虚拟机重新启动")
+        default: return String(format: NSLocalizedString("The Mac stopped: %@. %@", comment: "虚拟机异常终止"), reason, next)
         }
     }
 

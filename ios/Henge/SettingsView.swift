@@ -136,7 +136,7 @@ struct SettingsView: View {
                         ForEach(DeskAppearance.allCases) { Text(LocalizedStringKey($0.title)).tag($0) }
                     }
                     .pickerStyle(.segmented)
-                    Text("System follows the \(Device.name)'s Light or Dark setting. Henge stays dark while a Mac is running.")
+                    Text(String(format: NSLocalizedString("System follows the %@'s Light or Dark setting. Henge stays dark while a Mac is running.", comment: "外观跟随系统"), Device.name))
                         .font(.footnote).foregroundStyle(.secondary)
                 }
                 .listRowBackground(Desk.card)

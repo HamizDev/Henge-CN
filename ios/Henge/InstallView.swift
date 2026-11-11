@@ -64,7 +64,7 @@ struct InstallView: View {
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
-                        .accessibilityLabel("Delete the \(r.name) download")
+                        .accessibilityLabel(Text(String(format: NSLocalizedString("Delete the %@ download", comment: "下载删除按钮"), r.name)))
                         .padding(.trailing, 6)
                     }
                 }
@@ -124,8 +124,7 @@ struct InstallView: View {
         .buttonStyle(DeskButtonStyle(enabled: jitReady && !Device.chipTooOld))
         .disabled(!jitReady || Device.chipTooOld)
         .padding(.top, 20)
-        Text(Device.chipTooOld ? Device.chipTooOldText : jitReady ? "Keep Henge open and the \(Device.name) plugged in. Needs about \(ByteText.string(UInt64(Installer.spaceNeeded(release)))) free."
-                                : JITBootstrap.lastFailure ?? "Turn on JIT first. \(jit.automaticDescription)")
+        Text(installAdvice)
             .font(.system(size: 13))
             .foregroundStyle(Desk.dim)
             .multilineTextAlignment(.center)
@@ -138,17 +137,26 @@ struct InstallView: View {
         }
     }
 
+    /// 为动态设备容量和 JIT 安装提示提供本地化。
+    private var installAdvice: String {
+        if Device.chipTooOld { return Device.chipTooOldText }
+        if jitReady {
+            return String(format: NSLocalizedString("Keep Henge open and the %@ plugged in. Needs about %@ free.", comment: "安装空间提示"), Device.name, ByteText.string(UInt64(Installer.spaceNeeded(release))))
+        }
+        return JITBootstrap.lastFailure ?? String(format: NSLocalizedString("Turn on JIT first. %@", comment: "需要 JIT"), jit.automaticDescription)
+    }
+
     private func versionRow(_ r: MacOSRelease) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text(r.name).font(.system(size: 16, weight: .medium)).foregroundStyle(Desk.text)
                 if let size = Installer.imageSize(r) {
-                    Text("Downloaded, \(ByteText.string(UInt64(size)))").font(.system(size: 13)).foregroundStyle(Desk.good)
+                    Text(String(format: NSLocalizedString("Downloaded, %@", comment: "已下载镜像大小"), ByteText.string(UInt64(size)))).font(.system(size: 13)).foregroundStyle(Desk.good)
                 } else if let part = Installer.partSize(r) {
-                    Text("\(ByteText.string(UInt64(part))) of \(ByteText.string(UInt64(r.bytes))) downloaded: goes on from there")
+                    Text(String(format: NSLocalizedString("%@ of %@ downloaded: goes on from there", comment: "断点续传进度"), ByteText.string(UInt64(part)), ByteText.string(UInt64(r.bytes))))
                         .font(.system(size: 13)).foregroundStyle(Desk.dim)
                 } else {
-                    Text("\(ByteText.string(UInt64(r.bytes))) download").font(.system(size: 13)).foregroundStyle(Desk.dim)
+                    Text(String(format: NSLocalizedString("%@ download", comment: "待下载镜像大小"), ByteText.string(UInt64(r.bytes)))).font(.system(size: 13)).foregroundStyle(Desk.dim)
                 }
                 Text(LocalizedStringKey(r.note)).font(.system(size: 13)).foregroundStyle(Desk.dim)
             }
@@ -194,7 +202,7 @@ struct InstallView: View {
     }
 
     @ViewBuilder private var progress: some View {
-        Text("\(release.name) on this \(Device.name). Keep Henge open.")
+        Text(String(format: NSLocalizedString("%@ on this %@. Keep Henge open.", comment: "系统安装进度"), release.name, Device.name))
             .font(.system(size: 16))
             .foregroundStyle(Desk.dim)
             .frame(maxWidth: .infinity, alignment: .leading)
