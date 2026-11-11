@@ -1,1 +1,2 @@
 "CFBundleDisplayName" = "Henge";
+"NSCameraUsageDescription" = "Henge 可以使用音量键作为虚拟触控板的鼠标按钮。为接收按键事件，需要启用相机，但不会录制、保存或显示视频。";

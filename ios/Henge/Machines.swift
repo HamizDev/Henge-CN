@@ -90,7 +90,18 @@ final class Machines: ObservableObject {
     /// Machine folders nothing refers to (an install cut short by a crash or by quitting): their disks take real space.
     /// A folder whose install finished (Henge stopped before it was listed) is listed again instead, and nothing is
     /// removed when the list itself could not be read: every Mac would look unreferenced.
+    /// Downloads by builds before 0.3 kept a stopped download in the system's temporary files, where nothing could resume
+    /// or delete it (#58): those go. Downloads now stay in Restore images as .part files and go on from there.
+    private func removeOldTemporaryDownloads() {
+        let tmp = URL(fileURLWithPath: NSTemporaryDirectory())
+        guard let names = try? FileManager.default.contentsOfDirectory(atPath: tmp.path) else { return }
+        for name in names where name.hasPrefix("CFNetworkDownload_") && name.hasSuffix(".tmp") {
+            try? FileManager.default.removeItem(at: tmp.appendingPathComponent(name))
+        }
+    }
+
     private func removeLeftovers() {
+        removeOldTemporaryDownloads()
         if listUnreadable {
             HengeLog.log("machines", "the list of Macs could not be read: no machine folder is removed")
             return
@@ -230,7 +241,7 @@ final class Machines: ObservableObject {
         let free = (try? Self.root.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]))?.volumeAvailableCapacityForImportantUsage ?? 0
         let needed = Int64(used) + (256 << 20)
         if free > 0 && free < needed {
-            throw message(String(format: NSLocalizedString("Exporting %@ needs about %@ free; this %@ has %@. Deleting a downloaded macOS installer (Install macOS, swipe it) frees about 16 GB.", comment: "Export storage"), mac.name, ByteText.string(UInt64(needed)), Device.name, ByteText.string(UInt64(free))))
+            throw message(String(format: NSLocalizedString("Exporting %@ needs about %@ free; this %@ has %@. Deleting a downloaded macOS installer (Install macOS, swipe it) frees about 16 GB.", comment: "Export space"), mac.name, ByteText.string(UInt64(needed)), Device.name, ByteText.string(UInt64(free))))
         }
         try fm.createDirectory(at: partial, withIntermediateDirectories: true)
         do {
@@ -306,6 +317,6 @@ final class Machines: ObservableObject {
     }
 
     private func message(_ text: String) -> NSError {
-        NSError(domain: "Henge", code: 1, userInfo: [NSLocalizedDescriptionKey: NSLocalizedString(text, comment: "Import or export failure")])
+        NSError(domain: "Henge", code: 1, userInfo: [NSLocalizedDescriptionKey: NSLocalizedString(text, comment: "Machine import and export")])
     }
 }

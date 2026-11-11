@@ -13,14 +13,14 @@
 
 name: Build Henge IPA
 
+# Manual only (Actions tab > Build Henge IPA > Run workflow): pushes to main don't build an IPA.
 on:
   workflow_dispatch: {}
   push:
     branches:
-      - '**'
+      - main
+      - 'sync/**'
 
-# Keep the newest build for each branch when several localization updates land.
-# Manual builds remain available through workflow_dispatch.
 permissions:
   contents: write
 
@@ -146,9 +146,6 @@ jobs:
       - name: Package Henge.ipa
         working-directory: Henge
         run: zsh ios/scripts/package_ipa.sh
-        # For a TrollStore build instead, use:
-        #   zsh ios/scripts/package_ipa.sh --trollstore
-        # which writes ~/Desktop/Henge.tipa instead.
 
       - name: Upload Henge.ipa
         uses: actions/upload-artifact@v4
@@ -157,7 +154,18 @@ jobs:
           path: /Users/runner/Desktop/Henge.ipa
           if-no-files-found: error
 
-      - name: 发布未签名 IPA 到 Releases（开发预览）
+      - name: Package Henge.tipa
+        working-directory: Henge
+        run: zsh ios/scripts/package_ipa.sh --trollstore
+
+      - name: Upload Henge.tipa
+        uses: actions/upload-artifact@v4
+        with:
+          name: Henge-tipa-${{ github.sha }}
+          path: /Users/runner/Desktop/Henge.tipa
+          if-no-files-found: error
+
+      - name: 发布 Henge-CN 0.3 未签名预览版到 Releases
         if: ${{ github.ref == 'refs/heads/main' }}
         shell: bash
         env:
@@ -165,24 +173,29 @@ jobs:
         run: |
           set -euo pipefail
           IPA="/Users/runner/Desktop/Henge.ipa"
+          TIPA="/Users/runner/Desktop/Henge.tipa"
           test -s "$IPA"
+          test -s "$TIPA"
           RELEASE_TAG="cn-dev-${GITHUB_RUN_NUMBER}"
           CHECKSUM=$(shasum -a 256 "$IPA" | awk '{print $1}')
           cat > /tmp/release-notes.md <<EOF
-          ## Henge-CN 自动构建（未签名开发预览版）
+          ## Henge-CN · 基于官方 Henge 0.3
 
-          从 main 分支成功构建，但尚未经实机验证，不能视为稳定版。
-
-          - 对应 Git 提交：${GITHUB_SHA}
-          - SHA-256：${CHECKSUM}
-          - 侧载前需要重新签名，并保留 get-task-allow 权限以启用 JIT。
-          - 请备份 iPhone 与已有虚拟机数据；iOS 27.2 Beta 2 兼容性待实测。
-          - 原项目：https://github.com/Leviidev/Henge
-          - 许可证：GPL-2.0-or-later；本 Release 附有对应源码。
+          本构建由 main 自动编译，**未经过 iPhone 17 Pro Max / iOS 27.2 Beta 2 真机功能与性能验收**。
+          - 对应提交：${GITHUB_SHA}
+          - IPA SHA-256：${CHECKSUM}
+          - \`Henge.ipa\`：未签名，SideStore / AltStore 等侧载时需保留 get-task-allow。
+          - \`Henge.tipa\`：仅适用于支持 TrollStore 的系统，不适用于所有 iOS 版本。
+          - 开发版本使用前请备份现有虚拟 Mac。签名替换时请避免清除应用数据。
+          - 代码基于 Leviidev/Henge 0.3，GPL-2.0-or-later，附对应源码。
           EOF
-          gh release create "$RELEASE_TAG" "$IPA" \
-            --repo "$GITHUB_REPOSITORY" \
-            --target "$GITHUB_SHA" \
-            --title "Henge-CN 开发预览 #${GITHUB_RUN_NUMBER}（未签名）" \
-            --notes-file /tmp/release-notes.md \
-            --prerelease
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "$IPA" "$TIPA" --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$RELEASE_TAG" "$IPA" "$TIPA" \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" \
+              --title "Henge-CN 0.3 开发预览 #${GITHUB_RUN_NUMBER}（未签名）" \
+              --notes-file /tmp/release-notes.md \
+              --prerelease
+          fi

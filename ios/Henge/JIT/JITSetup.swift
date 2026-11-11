@@ -17,9 +17,9 @@ enum JITMethod: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .automatic: return "Automatic"
-        case .stikDebug: return NSLocalizedString("StikDebug", comment: "Automatic JIT method")
-        case .trollStore: return NSLocalizedString("TrollStore", comment: "Automatic JIT method")
-        case .jailbreak: return NSLocalizedString("Jailbreak (Dopamine)", comment: "Automatic JIT method")
+        case .stikDebug: return "StikDebug"
+        case .trollStore: return "TrollStore"
+        case .jailbreak: return "Jailbreak (Dopamine)"
         case .builtIn: return "Built-in StikJIT"
         }
     }
@@ -130,12 +130,12 @@ final class JITCoordinator: ObservableObject {
 
     var automaticDescription: String {
         switch resolvedMethod {
-        case .stikDebug: return "StikDebug is installed, so Henge will open it."
-        case .trollStore: return "TrollStore is installed, so Henge will ask it to enable JIT."
-        case .jailbreak: return "This device is jailbroken, so JIT comes from the jailbreak's Allow JIT in Apps setting."
+        case .stikDebug: return NSLocalizedString("StikDebug is installed, so Henge will open it.", comment: "JIT method")
+        case .trollStore: return NSLocalizedString("TrollStore is installed, so Henge will ask it to enable JIT.", comment: "JIT method")
+        case .jailbreak: return NSLocalizedString("This device is jailbroken, so JIT comes from the jailbreak's Allow JIT in Apps setting.", comment: "JIT method")
         default: return hasPairing
-            ? NSLocalizedString("Henge will use its paired built-in helper.", comment: "Automatic JIT method")
-            : NSLocalizedString("StikDebug, TrollStore and a jailbreak were not found, so Henge will use its built-in helper.", comment: "Automatic JIT method")
+            ? NSLocalizedString("Henge will use its paired built-in helper.", comment: "JIT method")
+            : NSLocalizedString("StikDebug, TrollStore and a jailbreak were not found, so Henge will use its built-in helper.", comment: "JIT method")
         }
     }
 

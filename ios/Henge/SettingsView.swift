@@ -6,11 +6,31 @@ struct SettingsView: View {
     @AppStorage(HardwareMouse.speedKey) private var mouseSpeed = 1.0
     @AppStorage(HardwareMouse.reverseKey) private var reverseScrolling = false
     @AppStorage(HardwareMouse.scrollSpeedKey) private var scrollSpeed = 0.3
+    @AppStorage(VolumeClicks.inputModeKey) private var inputMode = VolumeClicks.InputMode.touchscreen
+    @AppStorage(VolumeClicks.modeKey) private var volumeMode = VolumeClicks.Mode.delayHold
+    @AppStorage(VolumeClicks.swapKey) private var swapButtons = false
+    @AppStorage(PhysicalMouseButtons.swapKey) private var swapMouseButtons = false
     @AppStorage(EngineTuning.refreshKey) private var refreshRate = 60
     @AppStorage(EngineTuning.fastFlushKey) private var fastFlush = true
     @AppStorage(EngineTuning.wfiSpinKey) private var wfiSpin = false
     @AppStorage(EngineTuning.superblocksKey) private var superblocks = false
     @AppStorage(JITBootstrap.codeCacheKey) private var codeCacheMB = JITBootstrap.defaultCodeCacheMB
+    @AppStorage(DeskAppearance.key) private var appearance = DeskAppearance.system
+
+    /// The second footer paragraph: how you click, given the selected input mode.
+    private var inputDescription: String {
+        if inputMode == .touchscreen {
+            return NSLocalizedString("Tap to click once. Tap then hold to begin dragging. Quickly tap with two fingers to right-click.", comment: "Trackpad input mode details")
+        }
+        switch volumeMode {
+        case .delayHold:
+            return NSLocalizedString("Delay hold waits to see if you're holding or just clicking the volume button, which results in all clicks being ~0.5s long.", comment: "Trackpad input mode details")
+        case .tapThenDrag:
+            return NSLocalizedString("Tap then drag waits to see if you're holding or just clicking the volume button, but it unconditionally sends a single click regardless of whether you tap or hold, which results in shorter clicks at the cost of sending a click before holding.", comment: "Trackpad input mode details")
+        case .intercept:
+            return NSLocalizedString("Activates the camera in order to intercept volume keys properly. This causes the volume keys to behave in the same way a mouse's buttons do, but it causes higher temperatures, as the camera is always on.", comment: "Trackpad input mode details")
+        }
+    }
 
     var body: some View {
         NavigationStack {
@@ -52,13 +72,37 @@ struct SettingsView: View {
                             Text("Scroll speed")
                             Slider(value: $scrollSpeed, in: 0.1...1.5)
                         }
+                        Toggle("Swap physical right and middle buttons", isOn: $swapMouseButtons)
+                        Text("Only enable this if your physical mouse's right and middle buttons are reversed in the Mac. Touch controls stay unchanged. Restart the Mac session to apply.")
+                            .font(.footnote).foregroundStyle(.secondary)
                         Text("A Magic Keyboard or a Bluetooth mouse moves the Mac's pointer. Pointer speed changes apply the next time a Mac starts; scroll speed changes apply immediately.")
                             .font(.footnote).foregroundStyle(.secondary)
                     }
                     .listRowBackground(Desk.card)
                 }
+                if !Device.isPad {
+                    Section("Trackpad") {
+                        Picker("Input mode", selection: $inputMode) {
+                            Text("Touchscreen").tag(VolumeClicks.InputMode.touchscreen)
+                            Text("Volume buttons").tag(VolumeClicks.InputMode.volumeButtons)
+                        }
+                        .pickerStyle(.menu)
+                        if inputMode == .volumeButtons {
+                            Picker("Button mode", selection: $volumeMode) {
+                                Text("Delay hold").tag(VolumeClicks.Mode.delayHold)
+                                Text("Tap then drag").tag(VolumeClicks.Mode.tapThenDrag)
+                                Text("Camera intercept").tag(VolumeClicks.Mode.intercept)
+                            }
+                            .pickerStyle(.menu)
+                            Toggle("Swap buttons", isOn: $swapButtons)
+                        }
+                        Text(String(format: NSLocalizedString("Henge is able to emulate a Magic Trackpad, allowing you to perform native macOS gestures using your device's touchscreen.\n\n%@", comment: "Trackpad explanation"), inputDescription))
+                            .font(.footnote).foregroundStyle(.secondary)
+                    }
+                    .listRowBackground(Desk.card)
+                }
                 Section("Performance") {
-                    // Henge-CN 2026-11-09: opt-in conservative macOS 27 preset.
+                    // Henge-CN: 可选保守性能预设，不更改上游默认值。
                     Button("Apply macOS 27 balanced preset") {
                         refreshRate = 30
                         fastFlush = true
@@ -84,6 +128,15 @@ struct SettingsView: View {
                     Text("A bigger code cache empties less often and takes more memory; Henge picks 1.5 GB where there is room for it. Applies the next time Henge opens. If JIT stops turning on, choose 1 GB.")
                         .font(.footnote).foregroundStyle(.secondary)
                     Text("macOS draws a frame for every refresh: 30 Hz leaves the most of the emulated CPU to apps, at the cost of choppier animation; 60 Hz is smoother. Faster disk writes order them without waiting for a full sync; a sudden power loss could lose the last ones. Quicker wake keeps an idle CPU watching for work for 50 µs, at some battery cost. Superblocks let translated code run past conditional branches. Changes apply the next time a Mac starts.")
+                        .font(.footnote).foregroundStyle(.secondary)
+                }
+                .listRowBackground(Desk.card)
+                Section("Appearance") {
+                    Picker("Appearance", selection: $appearance) {
+                        ForEach(DeskAppearance.allCases) { Text(LocalizedStringKey($0.title)).tag($0) }
+                    }
+                    .pickerStyle(.segmented)
+                    Text("System follows the \(Device.name)'s Light or Dark setting. Henge stays dark while a Mac is running.")
                         .font(.footnote).foregroundStyle(.secondary)
                 }
                 .listRowBackground(Desk.card)
