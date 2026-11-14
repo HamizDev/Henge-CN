@@ -22,7 +22,7 @@ on:
       - 'sync/**'
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: henge-build-${{ github.workflow }}-${{ github.ref }}
@@ -165,37 +165,4 @@ jobs:
           path: /Users/runner/Desktop/Henge.tipa
           if-no-files-found: error
 
-      - name: 发布 Henge-CN 0.3 未签名预览版到 Releases
-        if: ${{ github.ref == 'refs/heads/main' }}
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          IPA="/Users/runner/Desktop/Henge.ipa"
-          TIPA="/Users/runner/Desktop/Henge.tipa"
-          test -s "$IPA"
-          test -s "$TIPA"
-          RELEASE_TAG="cn-dev-${GITHUB_RUN_NUMBER}"
-          CHECKSUM=$(shasum -a 256 "$IPA" | awk '{print $1}')
-          cat > /tmp/release-notes.md <<EOF
-          ## Henge-CN · 基于官方 Henge 0.3
-
-          本构建由 main 自动编译，**未经过 iPhone 17 Pro Max / iOS 27.2 Beta 2 真机功能与性能验收**。
-          - 对应提交：${GITHUB_SHA}
-          - IPA SHA-256：${CHECKSUM}
-          - \`Henge.ipa\`：未签名，SideStore / AltStore 等侧载时需保留 get-task-allow。
-          - \`Henge.tipa\`：仅适用于支持 TrollStore 的系统，不适用于所有 iOS 版本。
-          - 开发版本使用前请备份现有虚拟 Mac。签名替换时请避免清除应用数据。
-          - 代码基于 Leviidev/Henge 0.3，GPL-2.0-or-later，附对应源码。
-          EOF
-          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            gh release upload "$RELEASE_TAG" "$IPA" "$TIPA" --repo "$GITHUB_REPOSITORY" --clobber
-          else
-            gh release create "$RELEASE_TAG" "$IPA" "$TIPA" \
-              --repo "$GITHUB_REPOSITORY" \
-              --target "$GITHUB_SHA" \
-              --title "Henge-CN 0.3 开发预览 #${GITHUB_RUN_NUMBER}（未签名）" \
-              --notes-file /tmp/release-notes.md \
-              --prerelease
-          fi
+      # 当前同步阶段暂停 Release 发布，仅保留 Actions 构建与 IPA/TIPA 产物。
