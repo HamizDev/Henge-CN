@@ -110,7 +110,10 @@ targets:
         script: |
           set -e
           cd "$SRCROOT/.."
-          make ios-lib build/henge-agent.gz build/tl-samples.dmg
+          make ios-lib build/henge-agent.gz
+          # 生成 Mac 示例程序时必须移除 Xcode iOS 目标继承的 SDKROOT。
+          # 否则 macOS clang 会错误使用 iPhoneOS SDK 并报 NSURLHandle.h 缺失。
+          env -u SDKROOT -u IPHONEOS_DEPLOYMENT_TARGET make build/tl-samples.dmg
           ./tools/build_ios_restore.sh
         basedOnDependencyAnalysis: false
     postBuildScripts:
