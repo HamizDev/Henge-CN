@@ -111,7 +111,7 @@ final class MacAppsStore: ObservableObject {
                 do { try FileManager.default.copyItem(at: url, to: to) } catch { trouble = error.localizedDescription }
                 if trouble == nil, MacApp(url: to) == nil {
                     try? FileManager.default.removeItem(at: to)
-                    trouble = "\(url.lastPathComponent) isn't a Mac app or program."
+                    trouble = String(format: NSLocalizedString("%@ isn't a Mac app or program.", comment: "Mac app file invalid"), url.lastPathComponent)
                 }
             }
             let found = trouble
@@ -125,7 +125,7 @@ final class MacAppsStore: ObservableObject {
 
     func addSamples() {
         guard let samples = Bundle.main.url(forResource: "tl-samples", withExtension: "dmg") else {
-            problem = "This build has no sample programs."
+            problem = NSLocalizedString("This build has no sample programs.", comment: "Sample programs unavailable")
             return
         }
         bring(in: samples)
@@ -238,14 +238,14 @@ struct MacAppRunView: View {
                 .font(.system(size: 15)).padding(17).deskCard()
 
                 if app.canRun {
-                    Button(running ? "Running…" : "Run") { run() }
+                    Button { run() } label: { Text(LocalizedStringKey(running ? "Running…" : "Run")) }
                         .buttonStyle(DeskButtonStyle()).disabled(running || (result == nil && henge_tl_ran_program() != 0)).padding(.top, 16)
                     Text("Programs run inside Henge, one per launch. After one has run, quit Henge and open it again to run another or to start a Mac.")
                         .font(.system(size: 13)).foregroundStyle(Desk.dim).frame(maxWidth: .infinity, alignment: .leading).padding(.top, 8)
                     if result != nil || !output.isEmpty {
                         DeskHeading("Output")
                         VStack(alignment: .leading, spacing: 8) {
-                            Text(output.isEmpty ? "(nothing printed)" : output)
+                            Text(output.isEmpty ? NSLocalizedString("(nothing printed)", comment: "No console output") : output)
                                 .font(.system(size: 12, design: .monospaced)).textSelection(.enabled)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             if let result { Text(result).font(.system(size: 13, weight: .semibold)).foregroundStyle(Desk.dim) }
@@ -285,7 +285,9 @@ struct MacAppRunView: View {
             HengeLog.log("macapps", "\(exe) returned \(rc)\(why.isEmpty ? "" : ": \(why)")")
             await MainActor.run {
                 output = String(text.suffix(20000))
-                result = rc == -1 && !why.isEmpty ? "Could not run it: \(why)" : "Finished with code \(rc)."
+                result = rc == -1 && !why.isEmpty
+                    ? String(format: NSLocalizedString("Could not run it: %@", comment: "Mac app run failure"), why)
+                    : String(format: NSLocalizedString("Finished with code %d.", comment: "Mac app exit code"), rc)
                 running = false
             }
         }

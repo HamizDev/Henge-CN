@@ -676,7 +676,7 @@ final class MacScreenHub {
 struct MacAppScreen: View {
     let app: MacApp
     @Environment(\.dismiss) private var dismiss
-    @State private var status = "Loading…"
+    @State private var status = NSLocalizedString("Loading…", comment: "Mac app loading status")
     @State private var started = false
     @State private var trackpad = UserDefaults.standard.object(forKey: MacScreenUIView.trackpadKey) as? Bool ?? true
     private let screen = MacAppScreen.screenSize()
@@ -734,10 +734,10 @@ struct MacAppScreen: View {
         }.value
         if let failure {
             HengeLog.log("macapps", "could not load \(app.name): \(failure)")
-            status = "Could not open it: \(failure)"
+            status = String(format: NSLocalizedString("Could not open it: %@", comment: "Mac app open failure"), failure)
             return
         }
-        status = "Starting…"
+        status = NSLocalizedString("Starting…", comment: "Mac app starting status")
         henge_tl_app_run_soon { rc in
             HengeLog.log("macapps", "the app's main returned \(rc)")
         }

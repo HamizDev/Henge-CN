@@ -399,3 +399,8 @@
 "Hide keyboard" = "隐藏键盘";
 "Mac Apps screen" = "Mac 应用画面";
 "A bigger code cache empties less often and takes more memory (about 1.75 times its size); Henge picks one by its memory limit: 1.5 GB where there is plenty, 512 MB where there is little. Applies the next time Henge opens. If JIT stops turning on, or a Mac closes Henge during setup, choose a smaller one." = "更大的代码缓存能减少清空次数，但内存占用约为设置值的 1.75 倍。Henge 会根据内存限制选择缓存容量：资源充足时默认 1.5 GB，紧张时 512 MB。重启 Henge 后生效。如 JIT 无法启动或虚拟 Mac 设置阶段导致 Henge 退出，可选更小的缓存。";
+"Loading…" = "正在加载…";
+"Could not open it: %@" = "无法打开：%@";
+"Could not run it: %@" = "无法运行：%@";
+"Finished with code %d." = "运行结束，退出代码为 %d。";
+"%@ isn't a Mac app or program." = "%@ 不是有效的 Mac 应用或可执行程序。";
