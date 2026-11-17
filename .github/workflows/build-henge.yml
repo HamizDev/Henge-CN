@@ -143,6 +143,14 @@ jobs:
         working-directory: Henge
         run: make ios-lib
 
+      - name: 验证设备型号对应与启动设备树修补
+        working-directory: Henge
+        run: |
+          set -euo pipefail
+          make build/test_dt_fixup
+          ./build/test_dt_fixup
+          make test-identity
+
       - name: Package Henge.ipa
         working-directory: Henge
         run: zsh ios/scripts/package_ipa.sh

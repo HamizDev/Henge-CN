@@ -404,3 +404,9 @@
 "Could not run it: %@" = "无法运行：%@";
 "Finished with code %d." = "运行结束，退出代码为 %d。";
 "%@ isn't a Mac app or program." = "%@ 不是有效的 Mac 应用或可执行程序。";
+"About This Mac" = "关于本机";
+"Report this %@" = "显示这台 %@ 的设备信息";
+"The Mac says it is %@%@. Changes apply the next time this Mac starts." = "虚拟 Mac 将报告为 %@%@。下次启动虚拟 Mac 时生效。";
+" with the %@ chip" = "（%@ 芯片）";
+"Also report a model identifier" = "同时报告设备型号标识符";
+"Reports %@ so this Mac shows a matching icon; the name stays %@. Snaps to the newest %@ this macOS recognises. Experimental: macOS keys some hardware decisions off the model." = "报告型号标识符 %@，以便在虚拟 macOS 中显示匹配的图标；设备名称仍为 %@。会选择当前 macOS 可识别的相近 %@ 型号。此功能属于实验性设置，macOS 可能依据设备型号做出硬件相关判断。";

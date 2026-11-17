@@ -18,6 +18,10 @@ struct VirtualMac: Identifiable, Codable, Hashable {
     var screenHeight: Int?
     /// m4 fork: the iPad's own panel at Retina density. On by default on iPad, for Macs that never chose.
     var retina: Bool?
+    /// 仅影响虚拟 Mac 启动时向 macOS 报告的身份，旧数据缺省为关闭。
+    var reportHostIdentity: Bool?
+    /// 是否同时报告型号标识符；默认关闭。
+    var reportHostModelID: Bool?
     var isRetina: Bool { Device.isPad && (retina ?? false) }
     var screen: (width: Int, height: Int) { isRetina ? Device.retinaScreen : (screenWidth ?? 1920, screenHeight ?? 1080) }
     var aspect: CGFloat { CGFloat(screen.width) / CGFloat(screen.height) }

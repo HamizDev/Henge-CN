@@ -11,6 +11,14 @@ struct MacSettingsView: View {
 
     init(mac: VirtualMac) { _mac = State(initialValue: mac) }
 
+    /// 保持动态设备名称、芯片型号的中文占位符顺序正确。
+    private var aboutThisMacNote: String {
+        let chip = Device.chipName.map {
+            String(format: NSLocalizedString(" with the %@ chip", comment: "Guest chip name"), $0)
+        } ?? ""
+        return String(format: NSLocalizedString("The Mac says it is %@%@. Changes apply the next time this Mac starts.", comment: "Guest identity explanation"), Device.marketingName, chip)
+    }
+
     var body: some View {
         ScrollView {
             VStack(spacing: 0) {
@@ -50,6 +58,33 @@ struct MacSettingsView: View {
                 }
                 .padding(.horizontal, 17)
                 .padding(.vertical, 10)
+                .deskCard()
+
+                DeskHeading("About This Mac")
+                VStack(alignment: .leading, spacing: 12) {
+                    Toggle(isOn: Binding(get: { mac.reportHostIdentity ?? false }, set: {
+                        mac.reportHostIdentity = $0
+                        if !$0 { mac.reportHostModelID = false }
+                        save()
+                    })) {
+                        Text(String(format: NSLocalizedString("Report this %@", comment: "Guest identity toggle"), Device.name))
+                            .font(.system(size: 16))
+                    }
+                    Text(aboutThisMacNote)
+                        .font(.system(size: 13)).foregroundStyle(Desk.dim)
+                    if mac.reportHostIdentity == true {
+                        Toggle(isOn: Binding(get: { mac.reportHostModelID ?? false }, set: {
+                            mac.reportHostModelID = $0
+                            save()
+                        })) {
+                            Text("Also report a model identifier").font(.system(size: 16))
+                        }
+                        Text(String(format: NSLocalizedString("Reports %@ so this Mac shows a matching icon; the name stays %@. Snaps to the newest %@ this macOS recognises. Experimental: macOS keys some hardware decisions off the model.", comment: "Guest model identifier warning"),
+                            Device.snappedModelIdentifier(forOS: mac.osName), Device.marketingName, Device.name))
+                            .font(.system(size: 13)).foregroundStyle(Desk.dim)
+                    }
+                }
+                .padding(17)
                 .deskCard()
 
                 if Device.fittingScreen.height != 1080 {

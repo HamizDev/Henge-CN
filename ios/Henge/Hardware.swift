@@ -62,6 +62,14 @@ enum Device {
     }()
 
     static var chipTooOldText: String { String(format: NSLocalizedString("macOS won't run on this %@. Henge needs an A14 or M1 chip or newer.", comment: "Unsupported device"), name) }
+
+    /// 供虚拟 macOS 的「关于本机」可选显示设备名称、芯片与对应型号。
+    static var modelIdentifier: String { HengeLog.deviceModel }
+    static var marketingName: String { DeviceIdentity.name(modelIdentifier) }
+    static var chipName: String? { DeviceIdentity.chip(modelIdentifier) }
+    static func snappedModelIdentifier(forOS osName: String?) -> String {
+        DeviceIdentity.snappedIdentifier(modelIdentifier, forOS: osName)
+    }
 }
 
 /// A keyboard attached to the device. iOS reports each key going down and coming up by its HID usage,
