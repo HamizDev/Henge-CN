@@ -416,3 +416,7 @@
 "Not enough contiguous address space for virtual Mac memory. Quit Henge, reopen it, enable JIT and try again." = "可用连续内存地址空间不足。请彻底退出 Henge，重新打开并启用 JIT 后重试；必要时减少虚拟 Mac 的内存。";
 
 "The configured virtual Mac memory is too small. Increase it in the Mac settings." = "虚拟 Mac 的内存设置过小，请在该虚拟 Mac 的设置中增加内存。";
+
+"The Mac list could not be read. Existing virtual disks have been preserved; restart Henge before importing or installing." = "虚拟 Mac 列表无法读取。已有虚拟磁盘已保留，请重新打开 Henge 后再导入或安装系统。";
+
+"Unlisted virtual Mac files were found and preserved. Check your backups before removing them." = "发现未登记的虚拟 Mac 文件，已为你保留。删除前请先检查备份。";

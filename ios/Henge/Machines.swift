@@ -145,8 +145,10 @@ final class Machines: ObservableObject {
                 HengeLog.log("machines", "\(mac.name) finished installing but was not listed: listed again")
                 continue
             }
-            HengeLog.log("machines", "removing the unfinished machine \(id)")
-            try? fm.removeItem(at: item)
+            // An unlisted folder can also be a valid import or a disk from a missing index.
+            // Keep it instead of guessing that its contents are disposable.
+            HengeLog.log("machines", "preserving unlisted machine folder \(id)")
+            lastError = NSLocalizedString("Unlisted virtual Mac files were found and preserved. Check your backups before removing them.", comment: "VM orphan protection")
         }
     }
 
@@ -181,6 +183,10 @@ final class Machines: ObservableObject {
     }
 
     private func adopt(_ folder: URL, move: Bool) async {
+        guard !listUnreadable else {
+            lastError = NSLocalizedString("The Mac list could not be read. Existing virtual disks have been preserved; restart Henge before importing or installing.", comment: "VM index unavailable")
+            return
+        }
         do {
             let data = try Data(contentsOf: folder.appendingPathComponent("machine.json"))
             let info = try JSONDecoder().decode(MachineFile.self, from: data)
@@ -317,12 +323,25 @@ final class Machines: ObservableObject {
     }
 
     /// machines.json is there but did not decode (damaged, or written by a newer Henge).
-    private var listUnreadable = false
+    private(set) var listUnreadable = false
 
     private func load() {
-        guard let data = try? Data(contentsOf: listURL) else { return }
+        let data: Data
+        do {
+            data = try Data(contentsOf: listURL)
+        } catch {
+            let ns = error as NSError
+            if ns.domain == NSCocoaErrorDomain && (ns.code == NSFileReadNoSuchFileError || ns.code == NSFileNoSuchFileError) {
+                return
+            }
+            listUnreadable = true
+            lastError = NSLocalizedString("The Mac list could not be read. Existing virtual disks have been preserved; restart Henge before importing or installing.", comment: "VM index unavailable")
+            HengeLog.log("machines", "machines.json read failed: \(error.localizedDescription)")
+            return
+        }
         guard let list = try? JSONDecoder().decode([VirtualMac].self, from: data) else {
             listUnreadable = true
+            lastError = NSLocalizedString("The Mac list could not be read. Existing virtual disks have been preserved; restart Henge before importing or installing.", comment: "VM index unavailable")
             HengeLog.log("machines", "machines.json (\(data.count) bytes) could not be read")
             return
         }
@@ -330,6 +349,10 @@ final class Machines: ObservableObject {
     }
 
     private func save() {
+        guard !listUnreadable else {
+            HengeLog.log("machines", "refusing to overwrite unreadable machine index")
+            return
+        }
         try? FileManager.default.createDirectory(at: Self.root, withIntermediateDirectories: true)
         excludeFromBackup()
         if let data = try? JSONEncoder().encode(all) { try? data.write(to: listURL, options: .atomic) }

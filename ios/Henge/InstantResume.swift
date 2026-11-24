@@ -22,8 +22,11 @@ enum InstantResume {
         let build = info["CFBundleVersion"] as? String ?? "?"
         let commit = info["HengeBuildCommit"] as? String ?? "unstamped"
         let stamp = info["HengeBuildDate"] as? String ?? "?"
+        let identity = ResumeIdentityKey.make(reportHost: mac.reportHostIdentity == true,
+            reportModel: mac.reportHostModelID == true, name: Device.marketingName,
+            chip: Device.chipName, modelID: Device.snappedModelIdentifier(forOS: mac.osName))
         return "Henge \(version) (\(build)) \(commit) \(stamp) mac \(mac.id.uuidString) ram \(ramMB) cpus \(cpus) "
-            + "screen \(mac.screen.width)x\(mac.screen.height) retina \(mac.isRetina)"
+            + "screen \(mac.screen.width)x\(mac.screen.height) retina \(mac.isRetina) " + identity
     }
 
     /// A whole saved Mac for these settings, and when it was saved.
@@ -46,27 +49,40 @@ enum InstantResume {
     /// while the GPU is still Henge's, so what only the GPU holds goes back into the Mac's memory.
     static func pause() {
         guard enabled, henge_vm_state() == 1 else { return }
+        let generation = henge_vm_generation()
         queue.async {
+            guard henge_vm_generation() == generation, henge_vm_state() == 1 else { return }
             var buffer = [CChar](repeating: 0, count: 256)
             if henge_vm_pause(&buffer, buffer.count) != 0 { HengeLog.log("resume", "not paused: \(String(cString: buffer))") }
         }
     }
 
     /// Henge is in the background: write the paused Mac out, in case iOS closes Henge. It stays paused.
-    static func suspend(_ mac: VirtualMac, ramMB: UInt64, cpus: Int) {
+    static func suspend(_ mac: VirtualMac, ident id: String) {
         guard enabled, henge_vm_state() == 1 || henge_vm_state() == 4 else { return }
-        let path = file(for: mac).path, id = ident(for: mac, ramMB: ramMB, cpus: cpus)
+        let path = file(for: mac).path
+        let generation = henge_vm_generation()
         var task = UIBackgroundTaskIdentifier.invalid
         task = UIApplication.shared.beginBackgroundTask(withName: "Henge save") {
             UIApplication.shared.endBackgroundTask(task)
             task = .invalid
         }
         queue.async {
+            defer {
+                DispatchQueue.main.async {
+                    if task != .invalid { UIApplication.shared.endBackgroundTask(task) }
+                    task = .invalid
+                }
+            }
+            guard henge_vm_generation() == generation else { return }
             let t0 = Date()
             var buffer = [CChar](repeating: 0, count: 256)
             /* Paused already, unless Henge went straight to the background. */
             var rc = henge_vm_state() == 4 ? 0 : henge_vm_pause(&buffer, buffer.count)
-            if rc == 0 { rc = henge_vm_save(path, id, &buffer, buffer.count) }
+            if rc == 0 {
+                guard henge_vm_generation() == generation else { return }
+                rc = henge_vm_save(path, id, &buffer, buffer.count)
+            }
             let took = String(format: "%.1f", Date().timeIntervalSince(t0))
             if rc == 0 {
                 let bytes = (try? FileManager.default.attributesOfItem(atPath: path)[.size] as? Int64) ?? 0
@@ -74,18 +90,15 @@ enum InstantResume {
             } else {
                 HengeLog.log("resume", "not saved after \(took) s: \(String(cString: buffer))")
             }
-            DispatchQueue.main.async {
-                if task != .invalid { UIApplication.shared.endBackgroundTask(task) }
-                task = .invalid
-            }
         }
     }
 
     /// Back in the foreground before iOS closed Henge (or active again after a moment inactive): the saved file, if
     /// any, is out of date the moment the Mac runs on.
     static func cameBack(_ mac: VirtualMac) {
+        let generation = henge_vm_generation()
         queue.async {
-            guard henge_vm_state() == 4 else { return }
+            guard henge_vm_generation() == generation, henge_vm_state() == 4 else { return }
             discard(for: mac)
             HengeLog.log("resume", henge_vm_continue() == 0 ? "back: the Mac runs on" : "back: the Mac could not run on")
         }

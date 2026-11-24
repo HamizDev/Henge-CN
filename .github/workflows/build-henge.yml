@@ -150,6 +150,7 @@ jobs:
           make build/test_dt_fixup
           ./build/test_dt_fixup
           make test-identity
+          make test-vm-safety
 
       - name: Package Henge.ipa
         working-directory: Henge

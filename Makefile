@@ -275,3 +275,11 @@ $(B)/test_device_identity: ios/Henge/DeviceIdentity.swift tests/test_device_iden
 test-identity: $(B)/test_device_identity
 	$(B)/test_device_identity
 .PHONY: test-identity
+
+# Regression coverage for Henge-CN memory sizing and resume identity.
+$(B)/test_vm_safety: ios/Henge/VMSafetyPolicy.swift tests/test_vm_safety.swift | $(B)
+	xcrun --sdk macosx swiftc $^ -o $@
+
+test-vm-safety: $(B)/test_vm_safety
+	$(B)/test_vm_safety
+.PHONY: test-vm-safety

@@ -20,7 +20,7 @@ struct SessionView: View {
     @State private var log: [String] = []
     @State private var started = Date()
     @State private var thermalState = ProcessInfo.processInfo.thermalState
-    @State private var bootRAM: UInt64 = 0 /* what the Mac was started with, which a save is for */
+    @State private var bootResumeID: String?
     @State private var pasteButtonRevision = 0
     @AppStorage("henge.cpus") private var cpus = 4
     @AppStorage("henge.matchScreenColors") private var matchScreenColors = true
@@ -188,7 +188,7 @@ struct SessionView: View {
             HardwareMouse.shared.releaseButtons()
             VolumeClicks.shared.releaseButtons()
             if phase == .inactive { InstantResume.pause() }
-            if phase == .background && bootRAM > 0 { InstantResume.suspend(mac, ramMB: bootRAM, cpus: cpus) }
+            if phase == .background, let ident = bootResumeID { InstantResume.suspend(mac, ident: ident) }
         }
         .onChange(of: showDetails) { showing in
             if showing { HardwareKeys.releaseAll(); StickyKeys.shared.releaseAll() }
@@ -573,6 +573,7 @@ struct SessionView: View {
     }
 
     private func run() async {
+        bootResumeID = nil
         error = nil
         state = 0
         userCode = false
@@ -618,12 +619,14 @@ struct SessionView: View {
         } else {
             henge_vm_set_identity(nil, nil, nil)
         }
+        let bootCPUs = cpus
+        let resumeID = InstantResume.ident(for: mac, ramMB: ram, cpus: bootCPUs)
         var rc: Int32 = -1
-        if InstantResume.enabled, let at = InstantResume.saved(for: mac, ramMB: ram, cpus: cpus) {
+        if InstantResume.enabled, let at = InstantResume.saved(for: mac, ramMB: ram, cpus: bootCPUs) {
             HengeLog.log("resume", "picking up the Mac saved \(Int(Date().timeIntervalSince(at))) s ago")
             let t0 = Date()
-            rc = henge_vm_resume(mac.rom.path, mac.disk.path, mac.aux.path, mac.ecid, mac.seed, ram, Int32(cpus),
-                                 InstantResume.file(for: mac).path, InstantResume.ident(for: mac, ramMB: ram, cpus: cpus), &buffer, buffer.count)
+            rc = henge_vm_resume(mac.rom.path, mac.disk.path, mac.aux.path, mac.ecid, mac.seed, ram, Int32(bootCPUs),
+                                 InstantResume.file(for: mac).path, resumeID, &buffer, buffer.count)
             if rc == 0 {
                 HengeLog.log("resume", String(format: "resumed in %.1f s", Date().timeIntervalSince(t0)))
             } else {
@@ -633,13 +636,13 @@ struct SessionView: View {
         }
         InstantResume.discard(for: mac) /* used or out of date: the disk moves on from here */
         if rc != 0 {
-            rc = henge_vm_boot(mac.rom.path, mac.disk.path, mac.aux.path, mac.ecid, mac.seed, ram, Int32(cpus), &buffer, buffer.count)
+            rc = henge_vm_boot(mac.rom.path, mac.disk.path, mac.aux.path, mac.ecid, mac.seed, ram, Int32(bootCPUs), &buffer, buffer.count)
         }
         if rc != 0 {
             error = String(cString: buffer)
             return
         }
-        bootRAM = ram
+        bootResumeID = resumeID
         started = Date()
         var used = mac
         used.lastUsed = started
@@ -670,6 +673,7 @@ struct SessionView: View {
                 HengeLog.log("session", "thermal state: \(Self.thermalLabel(heat))")
             }
             if state == 2 {
+                bootResumeID = nil
                 typing = false
                 showDetails = false
                 confirmStop = false
@@ -705,11 +709,13 @@ struct SessionView: View {
     }
 
     private func stopTapped() {
-        if state == 1 { confirmStop = true } else { close() }
+        if state == 1 || state == 4 { confirmStop = true } else { close() }
     }
 
     private func finish() {
-        if state == 1 || state == 4 {
+        bootResumeID = nil
+        let current = henge_vm_state()
+        if current == 1 || current == 4 {
             MacPreview.saveNow(for: mac)
             henge_vm_stop()
         }

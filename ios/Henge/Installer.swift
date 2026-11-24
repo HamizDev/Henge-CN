@@ -110,6 +110,10 @@ final class Installer: NSObject, ObservableObject {
 
     func start(_ release: MacOSRelease, name: String, ramMB: Int, cpus: Int, keepImage: Bool) {
         guard !busy else { return }
+        guard !Machines.shared.listUnreadable else {
+            phase = .failed(NSLocalizedString("The Mac list could not be read. Existing virtual disks have been preserved; restart Henge before importing or installing.", comment: "VM index unavailable"))
+            return
+        }
         phase = .checking
         machineName = name
         UIApplication.shared.isIdleTimerDisabled = true // the screen locking would suspend the download and the restore
