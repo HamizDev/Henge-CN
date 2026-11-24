@@ -38,15 +38,30 @@ struct VirtualMac: Identifiable, Codable, Hashable {
 enum GuestMemory {
     /// Points the engine at the file (it is unlinked as soon as it is open) and returns the size that fits.
     static func prepare(_ mac: VirtualMac) -> UInt64 {
+        preparePlan(mac).ramMB
+    }
+
+    static func preparePlan(_ mac: VirtualMac) -> GuestRAMPlan {
         let file = mac.directory.appendingPathComponent("ram.tmp")
         setenv("HV_RAM_FILE", file.path, 1)
         let free = (try? mac.directory.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]))?
-            .volumeAvailableCapacityForImportantUsage ?? 0
-        let room = free > 0 ? UInt64(max(free - (2 << 30), 0)) >> 20 : UInt64.max
+            .volumeAvailableCapacityForImportantUsage
+        henge_ios_release_high_room()
         let reach = henge_largest_mapping_mb()
-        let ram = min(UInt64(mac.ramMB), room, reach > 512 ? reach - 512 : 0) / 512 * 512
-        HengeLog.log("session", "guest RAM \(ram) MB (asked \(mac.ramMB), disk room \(room), largest mapping \(reach))")
-        return ram
+        let plan = GuestRAMPlan(requestedMB: mac.ramMB, availableStorageBytes: free, largestMappingMB: reach)
+        HengeLog.log("session", "guest RAM \(plan.ramMB) MB (asked \(mac.ramMB), disk room \(plan.storageRoomMB), largest mapping \(reach))")
+        return plan
+    }
+
+    static func failureMessage(_ plan: GuestRAMPlan, minimumMB: UInt64) -> String {
+        switch plan.limitation(minimumMB: minimumMB) {
+        case .some(.storage):
+            return NSLocalizedString("Not enough free storage for virtual Mac memory. Free up storage and try again.", comment: "Guest RAM storage limit")
+        case .some(.addressSpace):
+            return NSLocalizedString("Not enough contiguous address space for virtual Mac memory. Quit Henge, reopen it, enable JIT and try again.", comment: "Guest RAM address-space limit")
+        default:
+            return NSLocalizedString("The configured virtual Mac memory is too small. Increase it in the Mac settings.", comment: "Guest RAM configuration")
+        }
     }
 }
 

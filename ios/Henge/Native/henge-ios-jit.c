@@ -572,6 +572,15 @@ HENGE_EXPORT int henge_ios_take_high_room(void **base, size_t *bytes)
     return n;
 }
 
+/* Return unclaimed Mac-app reservations before measuring virtual Mac RAM.
+   Based on upstream #211 and #221; never reclaim addresses given to a Mac app. */
+HENGE_EXPORT void henge_ios_release_high_room(void)
+{
+    if (g_high_hold_given || !(g_high_hold[0] || g_high_hold[1] || g_high_hold[2])) return;
+    henge_ios_release_high_hold();
+    HENGE_LOG("high hold released for the virtual Mac's memory");
+}
+
 static HengeDualMapping henge_prewarmed;
 static bool henge_prewarm_done;
 
@@ -986,6 +995,8 @@ bool henge_ios_jit_mapjit_works(void)
 }
 
 #else /* !iOS: keep the symbols so host builds and tests link */
+
+void henge_ios_release_high_room(void) {}
 
 void henge_ios_jit_install_trap_handler(void) {}
 static HengeDualMapping henge_ios_jit_allocate_real(size_t bytes)

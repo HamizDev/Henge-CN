@@ -21,6 +21,7 @@ struct SessionView: View {
     @State private var started = Date()
     @State private var thermalState = ProcessInfo.processInfo.thermalState
     @State private var bootRAM: UInt64 = 0 /* what the Mac was started with, which a save is for */
+    @State private var pasteButtonRevision = 0
     @AppStorage("henge.cpus") private var cpus = 4
     @AppStorage("henge.matchScreenColors") private var matchScreenColors = true
     @AppStorage("henge.display.brightness") private var screenBrightness = 1.0
@@ -178,6 +179,8 @@ struct SessionView: View {
         .onChange(of: scenePhase) { phase in
             guard phase != .active else {
                 display.refresh()
+                // Refresh the system control without reading the clipboard ourselves.
+                pasteButtonRevision &+= 1
                 InstantResume.cameBack(mac)
                 return
             }
@@ -355,6 +358,7 @@ struct SessionView: View {
         .labelStyle(.iconOnly)
         .buttonBorderShape(.circle)
         .tint(Desk.raised)
+        .id(pasteButtonRevision)
     }
 
     /// Hides the session's controls; four fingers on the screen bring them back. The first few times say so.
@@ -588,10 +592,11 @@ struct SessionView: View {
         guard !Task.isCancelled else { return }
         UIApplication.shared.isIdleTimerDisabled = true
         HardwareMouse.shared.start()
-        let ram = GuestMemory.prepare(mac)
+        let plan = GuestMemory.preparePlan(mac)
+        let ram = plan.ramMB
         HengeLog.log("session", "available memory \(henge_available_memory() >> 20) MB")
         guard ram >= 1024 else {
-            error = NSLocalizedString("There is not room for this Mac's memory: it needs a few GB of free storage.", comment: "VM cannot start")
+            error = GuestMemory.failureMessage(plan, minimumMB: 1024)
             return
         }
         var buffer = [CChar](repeating: 0, count: 256)
