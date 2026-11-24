@@ -48,8 +48,9 @@ enum GuestMemory {
             .volumeAvailableCapacityForImportantUsage
         henge_ios_release_high_room()
         let reach = henge_largest_mapping_mb()
-        let plan = GuestRAMPlan(requestedMB: mac.ramMB, availableStorageBytes: free, largestMappingMB: reach)
-        HengeLog.log("session", "guest RAM \(plan.ramMB) MB (asked \(mac.ramMB), disk room \(plan.storageRoomMB), largest mapping \(reach))")
+        let cap = Device.guestRAMCapMB
+        let plan = GuestRAMPlan(requestedMB: mac.ramMB, availableStorageBytes: free, largestMappingMB: reach, physicalCapMB: cap)
+        HengeLog.log("session", "guest RAM \(plan.ramMB) MB (asked \(mac.ramMB), disk room \(plan.storageRoomMB), largest mapping \(reach), physical cap \(cap == .max ? "none" : String(cap)))")
         return plan
     }
 
@@ -59,6 +60,8 @@ enum GuestMemory {
             return NSLocalizedString("Not enough free storage for virtual Mac memory. Free up storage and try again.", comment: "Guest RAM storage limit")
         case .some(.addressSpace):
             return NSLocalizedString("Not enough contiguous address space for virtual Mac memory. Quit Henge, reopen it, enable JIT and try again.", comment: "Guest RAM address-space limit")
+        case .some(.physicalMemory):
+            return NSLocalizedString("Memory protection limits the guest below the required RAM. Review the memory protection setting before trying again.", comment: "Guest RAM physical limit")
         default:
             return NSLocalizedString("The configured virtual Mac memory is too small. Increase it in the Mac settings.", comment: "Guest RAM configuration")
         }

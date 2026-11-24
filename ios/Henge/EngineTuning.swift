@@ -8,6 +8,17 @@ enum EngineTuning {
     static let superblocksKey = "henge.perf.superblocks"
     static let wfiSpinKey = "henge.perf.wfiSpin"
     static let fastFlushKey = "henge.perf.fastFlush"
+    // Existing engine features investigated in upstream PR #218. Opt-in, not a new default.
+    static let syncWaitKey = "henge.perf.syncWait"
+    static let rangeDropKey = "henge.perf.rangeDrop"
+
+    static var resumeKey: String {
+        let keys = ["HV_HZ", "HV_WFI_SPIN", "HV_FLUSH", "HV_SUPERBLOCKS", "HV_SYNC_WAIT", "HV_RANGE_DROP"]
+        return keys.map { key in
+            let value = getenv(key).map { atoi($0) } ?? 0
+            return "\(key)=\(value)"
+        }.joined(separator: ",")
+    }
 
     static let defaults: [String: String] = [
         // 60, not 120: every frame macOS draws is emulated and replayed, so 120 Hz
@@ -25,6 +36,8 @@ enum EngineTuning {
         if d.bool(forKey: superblocksKey) { env["HV_SUPERBLOCKS"] = "1" } else { unsetenv("HV_SUPERBLOCKS") }
         if d.bool(forKey: wfiSpinKey) { env["HV_WFI_SPIN"] = "50" }
         if d.object(forKey: fastFlushKey) as? Bool == false { env["HV_FLUSH"] = "0" }
+        env.merge(VMPerformancePolicy.tlbOptions(sleepWait: d.bool(forKey: syncWaitKey),
+                                                batchDrop: d.bool(forKey: rangeDropKey))) { _, new in new }
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         // GPU command trace: on while Documents/trace-on exists (it is checked every frame, so it can be toggled live).
         env["HV_PVG_TRACE_FILE"] = docs.appendingPathComponent("trace-on").path

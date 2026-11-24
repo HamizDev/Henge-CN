@@ -14,6 +14,9 @@ struct SettingsView: View {
     @AppStorage(EngineTuning.fastFlushKey) private var fastFlush = true
     @AppStorage(EngineTuning.wfiSpinKey) private var wfiSpin = false
     @AppStorage(EngineTuning.superblocksKey) private var superblocks = false
+    @AppStorage(EngineTuning.syncWaitKey) private var syncWait = false
+    @AppStorage(EngineTuning.rangeDropKey) private var rangeDrop = false
+    @AppStorage(VMPerformancePolicy.memoryProtectionKey) private var memoryProtection = true
     @AppStorage(JITBootstrap.codeCacheKey) private var codeCacheMB = JITBootstrap.defaultCodeCacheMB
     @AppStorage(DeskAppearance.key) private var appearance = DeskAppearance.system
     @AppStorage(InstantResume.key) private var instantResume = false
@@ -110,9 +113,12 @@ struct SettingsView: View {
                         fastFlush = true
                         wfiSpin = false
                         superblocks = false
+                        syncWait = false
+                        rangeDrop = false
+                        memoryProtection = true
                         codeCacheMB = JITBootstrap.defaultCodeCacheMB
                     }
-                    Text("Uses 30 Hz, faster ordered disk writes, and non-experimental CPU settings. The code-cache size follows your signing entitlement. Quit and reopen Henge before the next Mac session. This reduces graphics overhead; it does not eliminate macOS 27 emulation costs.")
+                    Text("Uses 30 Hz, faster ordered disk writes, memory protection and non-experimental CPU settings. The default code cache follows both physical memory and the app memory limit. Quit and reopen Henge before the next Mac session. This reduces graphics overhead; it does not eliminate macOS 27 emulation costs.")
                         .font(.footnote).foregroundStyle(.secondary)
                     Picker("Mac refresh rate", selection: $refreshRate) {
                         Text("30 Hz").tag(30)
@@ -123,12 +129,19 @@ struct SettingsView: View {
                     Toggle("Faster disk writes", isOn: $fastFlush)
                     Toggle("Quicker wake from idle", isOn: $wfiSpin)
                     Toggle("Superblocks (experimental)", isOn: $superblocks)
+                    Toggle("Sleep while waiting for CPU synchronization (experimental)", isOn: $syncWait)
+                    Toggle("Batch remote TLB invalidations (experimental)", isOn: $rangeDrop)
+                    Text("These options may reduce CPU synchronization overhead. They are off by default; test one at a time. If the guest becomes unstable, turn them off and restart the Mac. No device-specific speedup has been verified.")
+                        .font(.footnote).foregroundStyle(.secondary)
+                    Toggle("Protect memory on smaller devices", isOn: $memoryProtection)
+                    Text("Limits guest RAM to 2 GB on devices with up to about 6 GB of physical memory, or 3 GB on devices with about 8 GB. Larger devices are not capped. The saved RAM setting is unchanged; details show the actual allocation. Changes apply at the next Mac boot.")
+                        .font(.footnote).foregroundStyle(.secondary)
                     Picker("Code cache", selection: $codeCacheMB) {
                         Text("512 MB").tag(512)
                         Text("1 GB").tag(1024)
                         Text("1.5 GB").tag(1536)
                     }
-                    Text("A bigger code cache empties less often and takes more memory (about 1.75 times its size); Henge picks one by its memory limit: 1.5 GB where there is plenty, 512 MB where there is little. Applies the next time Henge opens. If JIT stops turning on, or a Mac closes Henge during setup, choose a smaller one.")
+                    Text("A bigger code cache empties less often and takes more memory (about 1.75 times its size). The default is based on physical memory and the app memory limit; smaller devices use a more conservative size. Manual choices are preserved. Applies the next time Henge opens. If JIT or setup fails, choose a smaller cache.")
                         .font(.footnote).foregroundStyle(.secondary)
                     Text("macOS draws a frame for every refresh: 30 Hz leaves the most of the emulated CPU to apps, at the cost of choppier animation; 60 Hz is smoother. Faster disk writes order them without waiting for a full sync; a sudden power loss could lose the last ones. Quicker wake keeps an idle CPU watching for work for 50 µs, at some battery cost. Superblocks let translated code run past conditional branches. Changes apply the next time a Mac starts.")
                         .font(.footnote).foregroundStyle(.secondary)

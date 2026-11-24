@@ -228,6 +228,7 @@ final class Installer: NSObject, ObservableObject {
         // (it is outside Henge's footprint, so iOS does not stop it) stalls the whole phone two thirds of the way through.
         var restoring = mac
         restoring.ramMB = min(max(mac.ramMB, 2048), 4096)
+        EngineTuning.apply()
         let plan = GuestMemory.preparePlan(restoring)
         let ram = plan.ramMB
         guard ram >= 2048 else { throw message(GuestMemory.failureMessage(plan, minimumMB: 2048)) }
@@ -257,7 +258,8 @@ final class Installer: NSObject, ObservableObject {
         try? (mac.osName ?? "").write(to: mac.directory.appendingPathComponent(Machines.installedMarker), atomically: true, encoding: .utf8)
         Machines.shared.add(mac)
         HengeLog.log("install", "\(mac.name): restore finished, added to the Macs")
-        if henge_vm_state() == 1 { henge_vm_stop() }
+        // The restore may take time to stop. Keep the main thread available to iOS.
+        if henge_vm_state() == 1 { await Task.detached { henge_vm_stop() }.value }
         try? FileManager.default.removeItem(at: work)
     }
 

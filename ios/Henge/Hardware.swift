@@ -34,12 +34,19 @@ enum Device {
         return (Int((Double(s.width) / 264 * 25.4).rounded()), Int((Double(s.height) / 264 * 25.4).rounded()))
     }
 
+    /// The opt-out cap affects the next boot, not the stored machine configuration.
+    static var guestRAMCapMB: UInt64 {
+        let enabled = UserDefaults.standard.object(forKey: VMPerformancePolicy.memoryProtectionKey) as? Bool ?? true
+        return VMPerformancePolicy.guestCapMB(physicalMB: ProcessInfo.processInfo.physicalMemory >> 20, enabled: enabled)
+    }
+
     /// How much memory to suggest for a new Mac: what leaves this device room for iOS.
     static var suggestedRAMGB: Int {
         let mb = ProcessInfo.processInfo.physicalMemory >> 20
         // m4 fork: an 8 GB iPad (7.4 GB usable) thrashes and kills the Mac at 6 GB: 16 GB devices only.
         // A 6 GB device (5.7 GB usable) could not build a 4 GB Mac, and installed a 3 GB one (#70); 4 GB devices, 2.
-        return mb >= 14_000 ? 8 : mb >= 10_000 ? 6 : mb >= 7_000 ? 4 : mb >= 5_000 ? 3 : 2
+        let suggested = mb >= 14_000 ? 8 : mb >= 10_000 ? 6 : mb >= 7_000 ? 4 : mb >= 5_000 ? 3 : 2
+        return guestRAMCapMB == .max ? suggested : min(suggested, Int(guestRAMCapMB / 1024))
     }
 
     /// The choices for a Mac's memory, in GB.
@@ -47,6 +54,10 @@ enum Device {
 
     /// What a choice risks on this device, if anything. An install always gets at least 2 GB (Installer.install).
     static func memoryNote(_ gb: Int) -> String? {
+        let cap = guestRAMCapMB
+        if cap != .max && gb > Int(cap / 1024) {
+            return String(format: NSLocalizedString("Memory protection limits this Mac to %d GB at the next boot. The saved memory setting is unchanged.", comment: "Physical memory cap"), Int(cap / 1024))
+        }
         if gb < 4 { return NSLocalizedString("macOS has little room under 4 GB, so it can be very slow.", comment: "Memory advice") }
         if gb > suggestedRAMGB { return String(format: NSLocalizedString("More than %d GB is a lot for this %@: iOS may close Henge when macOS gets busy.", comment: "Memory advice"), suggestedRAMGB, name) }
         return nil

@@ -65,8 +65,9 @@ enum JITBootstrap {
     /// where 1 GB and its records left a 2 GB Mac too little room in Setup, #70). A bigger cache fills and empties less
     /// often (macOS 27 filled 1 GB about once a minute) and costs more memory (its blocks' records come to about 0.75 of
     /// its size). Fixed for the launch: the region is claimed once.
-    static let defaultCodeCacheMB: Int = Entitlements.memoryLimitAtLaunch >= 5_500 << 20 ? 1536
-        : Entitlements.memoryLimitAtLaunch >= 3_500 << 20 ? 1024 : 512
+    static let defaultCodeCacheMB: Int = VMPerformancePolicy.defaultCacheMB(
+        physicalMB: ProcessInfo.processInfo.physicalMemory >> 20,
+        limitMB: UInt64(Entitlements.memoryLimitAtLaunch) >> 20)
     static let jitBytes: Int = {
         switch (UserDefaults.standard.object(forKey: codeCacheKey) as? Int) ?? defaultCodeCacheMB {
         case 1536: return 1536 << 20

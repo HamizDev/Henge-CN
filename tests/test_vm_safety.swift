@@ -20,6 +20,21 @@ struct VMSafetyTests {
         precondition(vm != host && host != model)
         precondition(model != ResumeIdentityKey.make(reportHost: true, reportModel: true, name: "A", chip: "M5", modelID: "b"))
         precondition(vm == ResumeIdentityKey.make(reportHost: false, reportModel: true, name: "B", chip: "M4", modelID: "b"))
-        print("VM safety checks passed")
+        // Physical RAM limits protect smaller phones and tablets, without changing the stored request.
+        precondition(VMPerformancePolicy.guestCapMB(physicalMB: 6200, enabled: true) == 2048)
+        precondition(VMPerformancePolicy.guestCapMB(physicalMB: 8000, enabled: true) == 3072)
+        precondition(VMPerformancePolicy.guestCapMB(physicalMB: 12000, enabled: true) == .max)
+        precondition(VMPerformancePolicy.guestCapMB(physicalMB: 8000, enabled: false) == .max)
+        let capped = GuestRAMPlan(requestedMB: 6144, availableStorageBytes: ample, largestMappingMB: 16896, physicalCapMB: 3072)
+        precondition(capped.ramMB == 3072 && capped.limitation(minimumMB: 4096) == .physicalMemory)
+        precondition(capped.limitation(minimumMB: 2048) == nil)
+        precondition(VMPerformancePolicy.defaultCacheMB(physicalMB: 8000, limitMB: 8000) == 1024)
+        precondition(VMPerformancePolicy.defaultCacheMB(physicalMB: 12000, limitMB: 6200) == 1536)
+        precondition(VMPerformancePolicy.defaultCacheMB(physicalMB: 6000, limitMB: 3200) == 512)
+        precondition(VMPerformancePolicy.tlbOptions(sleepWait: false, batchDrop: false) == ["HV_SYNC_WAIT": "0", "HV_RANGE_DROP": "0"])
+        precondition(VMPerformancePolicy.tlbOptions(sleepWait: true, batchDrop: false) == ["HV_SYNC_WAIT": "1", "HV_RANGE_DROP": "0"])
+        precondition(VMPerformancePolicy.tlbOptions(sleepWait: false, batchDrop: true) == ["HV_SYNC_WAIT": "0", "HV_RANGE_DROP": "256"])
+        precondition(VMPerformancePolicy.tlbOptions(sleepWait: true, batchDrop: true) == ["HV_SYNC_WAIT": "1", "HV_RANGE_DROP": "256"])
+        print("VM safety and performance policy checks passed")
     }
 }

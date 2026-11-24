@@ -220,6 +220,12 @@ void henge_ios_jit_log_footprint(const char *tag)
              info.phys_footprint / (1024.0 * 1024.0),
              info.resident_size  / (1024.0 * 1024.0),
              avail / (1024.0 * 1024.0));
+    /* Distinguish memory pressure from an ordinary crash; no audio or background assertions. */
+    if (count >= TASK_VM_INFO_COUNT)
+        HENGE_LOG("footprint[%s]: internal=%.0f compressed=%.0f external(file-backed)=%.0f graphics=%.0f peak=%.0f MiB",
+                  tag ? tag : "", info.internal / (1024.0 * 1024.0), info.compressed / (1024.0 * 1024.0),
+                  info.external / (1024.0 * 1024.0), info.ledger_tag_graphics_footprint / (1024.0 * 1024.0),
+                  info.ledger_phys_footprint_peak / (1024.0 * 1024.0));
 }
 
 size_t henge_ios_available_memory(void)

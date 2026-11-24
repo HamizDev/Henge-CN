@@ -13,6 +13,8 @@
 - **同步上游最新开发代码**：保留 macOS 0.3 的虚拟机功能，并引入实验性的 Instant Resume 与免完整 macOS 启动 Mac Apps 兼容层（两项功能默认关闭）。
 - **关于本机身份（可选）**：每台虚拟 Mac 的设置可选择在 macOS「关于本机」显示当前 iPhone/iPad 的设备名称与芯片；也可单独开启实验性的型号标识符映射。两个选项默认关闭，只修改启动期间的虚拟设备信息，不更改实际设备或虚拟磁盘。
 
+- **内存保护和可选 TLB 优化**：参考上游 [#214](https://github.com/Leviidev/Henge/pull/214) 与 [#218](https://github.com/Leviidev/Henge/pull/218)。小内存设备默认采用保守的客体 RAM 上限与 JIT 缓存默认值；不改写已有虚拟 Mac 设置。两项跨核同步实验开关默认关闭，可独立测试并关闭。没有引入静音后台保活、自动 balloon 回收或未合并的 TLB 竞态判断改动。
+
 ## 下载与安装
 
 **本次上游同步暂不发布新 Release**。现有 [Releases](https://github.com/HamizDev/Henge-CN/releases) 的 #20 仍为上一版。同步后的源码通过 [GitHub Actions](https://github.com/HamizDev/Henge-CN/actions) 编译检查；成功构建的 IPA/TIPA 仅保留为 Actions 产物。

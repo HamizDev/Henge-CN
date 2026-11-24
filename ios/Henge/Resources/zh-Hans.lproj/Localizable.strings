@@ -420,3 +420,23 @@
 "The Mac list could not be read. Existing virtual disks have been preserved; restart Henge before importing or installing." = "虚拟 Mac 列表无法读取。已有虚拟磁盘已保留，请重新打开 Henge 后再导入或安装系统。";
 
 "Unlisted virtual Mac files were found and preserved. Check your backups before removing them." = "发现未登记的虚拟 Mac 文件，已为你保留。删除前请先检查备份。";
+
+"Uses 30 Hz, faster ordered disk writes, memory protection and non-experimental CPU settings. The default code cache follows both physical memory and the app memory limit. Quit and reopen Henge before the next Mac session. This reduces graphics overhead; it does not eliminate macOS 27 emulation costs." = "设置为 30 Hz、较快的顺序磁盘写入，开启内存保护并关闭实验性 CPU 选项。默认代码缓存综合考虑物理内存和应用内存限制。下次运行 Mac 前请彻底退出并重启 Henge。此预设可降低图形绘制负担，但无法消除 macOS 27 的模拟开销。";
+
+"A bigger code cache empties less often and takes more memory (about 1.75 times its size). The default is based on physical memory and the app memory limit; smaller devices use a more conservative size. Manual choices are preserved. Applies the next time Henge opens. If JIT or setup fails, choose a smaller cache." = "较大的代码缓存能减少清空次数，但内存占用约为设置值的 1.75 倍。默认容量综合考虑物理内存和应用内存限制，小内存设备采用更保守的容量。手动设置仍会保留。重启 Henge 后生效。如果 JIT 或系统设置失败，请尝试更小的缓存。";
+
+"Sleep while waiting for CPU synchronization (experimental)" = "降低多核同步等待开销（实验性）";
+
+"Batch remote TLB invalidations (experimental)" = "批量处理跨核 TLB 刷新（实验性）";
+
+"These options may reduce CPU synchronization overhead. They are off by default; test one at a time. If the guest becomes unstable, turn them off and restart the Mac. No device-specific speedup has been verified." = "这些选项可能降低多核 CPU 同步开销，默认关闭，建议逐项测试。若虚拟 Mac 出现不稳定，请关闭并重新启动虚拟 Mac。尚未验证具体设备上的加速幅度。";
+
+"Protect memory on smaller devices" = "小内存设备保护";
+
+"Limits guest RAM to 2 GB on devices with up to about 6 GB of physical memory, or 3 GB on devices with about 8 GB. Larger devices are not capped. The saved RAM setting is unchanged; details show the actual allocation. Changes apply at the next Mac boot." = "约 6 GB 或更少物理内存的设备，虚拟 Mac 内存上限为 2 GB；约 8 GB 的设备上限为 3 GB。更大内存的设备不受此限制。已保存的内存设置不会改变，实际分配量可在虚拟 Mac 的详细信息中查看。下次启动虚拟 Mac 时生效。";
+
+"Memory protection limits the guest below the required RAM. Review the memory protection setting before trying again." = "内存保护限制导致实际可分配内存低于虚拟 Mac 的最低要求。请检查内存保护设置后重试。";
+
+"Memory protection limits this Mac to %d GB at the next boot. The saved memory setting is unchanged." = "内存保护将在下次启动时将实际分配内存限制为 %d GB。已保存的内存设置保持不变。";
+
+"Allocated guest memory" = "实际分配的虚拟内存";

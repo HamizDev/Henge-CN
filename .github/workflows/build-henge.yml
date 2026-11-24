@@ -151,6 +151,12 @@ jobs:
           ./build/test_dt_fixup
           make test-identity
           make test-vm-safety
+          make build/test_mmu
+          ulimit -s 65520
+          HV_SYNC_WAIT=0 HV_RANGE_DROP=0 ./build/test_mmu
+          HV_SYNC_WAIT=1 HV_RANGE_DROP=0 ./build/test_mmu
+          HV_SYNC_WAIT=0 HV_RANGE_DROP=256 ./build/test_mmu
+          HV_SYNC_WAIT=1 HV_RANGE_DROP=256 ./build/test_mmu
 
       - name: Package Henge.ipa
         working-directory: Henge

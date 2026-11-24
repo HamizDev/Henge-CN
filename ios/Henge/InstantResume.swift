@@ -27,6 +27,7 @@ enum InstantResume {
             chip: Device.chipName, modelID: Device.snappedModelIdentifier(forOS: mac.osName))
         return "Henge \(version) (\(build)) \(commit) \(stamp) mac \(mac.id.uuidString) ram \(ramMB) cpus \(cpus) "
             + "screen \(mac.screen.width)x\(mac.screen.height) retina \(mac.isRetina) " + identity
+            + " engine " + EngineTuning.resumeKey
     }
 
     /// A whole saved Mac for these settings, and when it was saved.

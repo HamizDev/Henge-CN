@@ -66,7 +66,15 @@ static void expect(const char *what, HvCpu *cpu, uint64_t va, HvAccess acc, int 
 int main(void) {
     static HvMachine m;
     static HvCpu cpu;
-    hv_machine_init(&m, 1 << 20);
+    if (hv_machine_init(&m, 1 << 20) != 0) return 1;
+    /* Verify the test runner actually selected the requested performance options. */
+    checks += 2;
+    if (hv_knob[HV_K_SYNCWAIT] != (getenv("HV_SYNC_WAIT") ? atoi(getenv("HV_SYNC_WAIT")) : 0)) {
+        puts("  FAIL HV_SYNC_WAIT selection"); failures++;
+    }
+    if (hv_knob[HV_K_RANGEDROP] != (getenv("HV_RANGE_DROP") ? atoi(getenv("HV_RANGE_DROP")) : 0)) {
+        puts("  FAIL HV_RANGE_DROP selection"); failures++;
+    }
     pt = aligned_alloc(65536, PT_SIZE);
     hv_machine_add_ram(&m, PT_PA, PT_SIZE, pt, 0);
     hv_cpu_reset(&cpu, &m);
@@ -392,7 +400,7 @@ int main(void) {
         const uint64_t base = 0x100000000ull;
         const int32_t ks[6] = {0, 1, 32, 63, 64, 100};
         for (int knob = 1; knob >= 0; knob--) {
-            hv_knob[HV_K_RANGEDROP] = knob ? 1024 : 0;
+            hv_knob[HV_K_RANGEDROP] = knob ? 256 : 0;
             hv_tlb_flush(&cpu2);
             for (int k = 0; k < 6; k++) {
                 uint64_t va = base + ((uint64_t)ks[k] << 14);
@@ -413,7 +421,7 @@ int main(void) {
             int queued = p2->nreq != 0 || p2->req_flags != 0;
             checks++;
             if (queued == knob) {
-                printf("  FAIL remote range, HV_RANGE_DROP %d: %s\n", knob ? 1024 : 0, queued ? "queued for the other CPU" : "not queued");
+                printf("  FAIL remote range, HV_RANGE_DROP %d: %s\n", knob ? 256 : 0, queued ? "queued for the other CPU" : "not queued");
                 failures++;
             }
             if (!knob) hv_cpu_process_requests(&cpu2); /* what it does when it next runs */

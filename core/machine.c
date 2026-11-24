@@ -91,6 +91,9 @@ static int init_rest(HvMachine *m) {
        a JIT check of 200 recompiled functions correct; bench times the same within noise). */
     hv_knob[HV_K_IJCPAGES] = getenv("HV_IJC_PAGES") ? atoi(getenv("HV_IJC_PAGES")) : 1;
     hv_knob[HV_K_DNSPROXY] = getenv("HV_DNS_PROXY") ? atoi(getenv("HV_DNS_PROXY")) : 1;
+    /* Host tests must read the same opt-in TLB settings as iOS. Do not enable them by default. */
+    hv_knob[HV_K_SYNCWAIT] = getenv("HV_SYNC_WAIT") ? atoi(getenv("HV_SYNC_WAIT")) : 0;
+    hv_knob[HV_K_RANGEDROP] = getenv("HV_RANGE_DROP") ? atoi(getenv("HV_RANGE_DROP")) : 0;
     /* So the tests can run the translator these ways too (the iOS and --phone paths read them in knobs_init). */
     if (getenv("HV_SUPERBLOCKS")) hv_knob[HV_K_SUPERBLOCKS] = atoi(getenv("HV_SUPERBLOCKS"));
     /* The exact check for an access in a page's last 15 bytes, in the access's out-of-line path (code size only):

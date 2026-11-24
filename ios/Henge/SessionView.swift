@@ -21,6 +21,7 @@ struct SessionView: View {
     @State private var started = Date()
     @State private var thermalState = ProcessInfo.processInfo.thermalState
     @State private var bootResumeID: String?
+    @State private var allocatedRAMMB: UInt64 = 0
     @State private var pasteButtonRevision = 0
     @AppStorage("henge.cpus") private var cpus = 4
     @AppStorage("henge.matchScreenColors") private var matchScreenColors = true
@@ -488,6 +489,9 @@ struct SessionView: View {
             List {
                 Section(phase) {
                     LabeledContent("CPUs on", value: String(format: NSLocalizedString("%d of %d", comment: "CPU status"), cpusOn, cpus))
+                    if allocatedRAMMB > 0 {
+                        LabeledContent("Allocated guest memory", value: "\(allocatedRAMMB) MB")
+                    }
                     LabeledContent("Temperature", value: Self.thermalLabel(thermalState))
                     LabeledContent("Translated blocks", value: String(format: "%.1f M/s", blocksPerSecond / 1e6))
                     LabeledContent("Network frames", value: String(format: NSLocalizedString("%d out, %d in", comment: "Network statistics"), framesOut, framesIn))
@@ -574,6 +578,7 @@ struct SessionView: View {
 
     private func run() async {
         bootResumeID = nil
+        allocatedRAMMB = 0
         error = nil
         state = 0
         userCode = false
@@ -643,6 +648,7 @@ struct SessionView: View {
             return
         }
         bootResumeID = resumeID
+        allocatedRAMMB = ram
         started = Date()
         var used = mac
         used.lastUsed = started

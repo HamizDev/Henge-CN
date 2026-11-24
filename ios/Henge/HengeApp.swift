@@ -67,6 +67,10 @@ struct RootView: View {
         }
         .background(WindowStyle(style: running != nil ? .dark : appearance.style))
         .sheet(isPresented: $jit.showSetup) { JITSetupFlow() }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didReceiveMemoryWarningNotification)) { _ in
+            HengeLog.log("memory", "iOS memory warning")
+            HengeLog.logFootprint("memory-warning")
+        }
         .task(id: scenePhase) {
             guard scenePhase == .active else { return }
             machines.collectImports()
